@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const GoMapAutocomplete = () => {
+const GoMapAutocomplete = ({ onSelect }) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState(null); // Store selected place
   const API_KEY = "AlzaSySdDQnER9Pr9Ay8Mg_ZbHaonEbOxiFwUOs"; // Replace with your actual key
 
   const fetchSuggestions = async (input) => {
@@ -17,7 +16,6 @@ const GoMapAutocomplete = () => {
       const response = await axios.get(
         `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${API_KEY}`
       );
-
       setSuggestions(response.data.predictions || []);
     } catch (error) {
       console.error("Error fetching autocomplete results:", error);
@@ -25,9 +23,9 @@ const GoMapAutocomplete = () => {
   };
 
   const handleSelectSuggestion = (place) => {
-    setQuery(place.description); // Set input value to selected place
-    setSelectedPlace(place); // Store place in state
-    setSuggestions([]); // Hide suggestions
+    setQuery(place.description); // Update input field with selected place
+    setSuggestions([]); // Clear suggestions list after selection
+    onSelect(place.description); // Call onSelect prop with selected place
   };
 
   return (
@@ -70,13 +68,6 @@ const GoMapAutocomplete = () => {
           ))}
         </ul>
       )}
-
-      {/* {selectedPlace && (
-        <div style={{ marginTop: "10px", padding: "10px", border: "1px solid #ddd" }}>
-          <h4>Selected Place:</h4>
-          <p><strong>Name:</strong> {selectedPlace.description}</p>
-        </div>
-      )} */}
     </div>
   );
 };

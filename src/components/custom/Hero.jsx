@@ -11,9 +11,9 @@ export function Hero() {
         Plan, Explore, and Experience the World Like Never Before
       </h2>
       <Link to='/create-trip'>  
-      <button className='mt-4 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-700'>
-        Get Started
-      </button>
+        <button className='mt-4 px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-700'>
+          Get Started
+        </button>
       </Link>
     </div>
   );
