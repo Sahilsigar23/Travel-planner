@@ -2,7 +2,7 @@ export const SelectBudgetOptions = [
     {
       id: 1,
       icon: "💸",
-      title: "Budget",
+      title: "Cheap",
       desc: "Economical options for budget-conscious travelers.",
     },
     {

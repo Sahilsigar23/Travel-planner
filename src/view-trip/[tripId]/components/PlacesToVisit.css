@@ -1,0 +1,47 @@
+.places-to-visit {
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .places-to-visit .title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .places-to-visit .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .places-to-visit .place-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    padding: 15px;
+  }
+  
+  .places-to-visit .place-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .places-to-visit .place-card .time {
+    font-size: 1.25rem;
+    font-weight: medium;
+    color: #ff7f50; /* Coral color */
+  }
+  
+  .places-to-visit .place-card .plan-item {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .places-to-visit .place-card .plan-item h2 {
+    font-size: 1rem;
+    color: #555;
+  }

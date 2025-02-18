@@ -9,6 +9,10 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import GoMapAutocomplete from "./autocomplete";
 import { Input } from "@/components/ui/input";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/service/firebaseConfig";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -25,6 +29,8 @@ function CreateTrip() {
   });
 
   const [openDailog, setOpenDailog] = useState(false); // Dialog visibility state
+  const [loading, setLoading] = useState(false); // Loading state
+  const navigate=useNavigate();
 
   // Handle input changes and update formData
   const handleInputChange = (name, value) => {
@@ -74,6 +80,34 @@ function CreateTrip() {
       });
   };
 
+  const SaveAiTrip = async (tripData) => {
+    setLoading(true);
+    const docId = Date.now().toString(); // Define docId outside the try block
+    try {
+      // Add a new document in collection "AITrips"
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      console.log("User Profile:", userProfile); // Debugging log
+      if (!userProfile || !userProfile.email) {
+        toast.error("User information is missing. Please log in again.");
+        setLoading(false);
+        return;
+      }
+      await setDoc(doc(db, "AITrips", docId), {
+        userSelction: formData,
+        tripData: JSON.parse(tripData),
+        userEmail: userProfile.email,
+        id: docId
+      });
+      toast.success("Trip saved successfully!");
+    } catch (error) {
+      console.error("Error saving trip:", error);
+      toast.error("Failed to save trip. Please try again.");
+    } finally {
+      setLoading(false);
+      navigate(`/view-trip/${docId}`); // Navigate to view trip page
+    }
+  };
+
   // Generate Trip
   const onGenerateTrip = async () => {
     const user = localStorage.getItem("user");
@@ -99,6 +133,8 @@ function CreateTrip() {
       return;
     }
 
+    setLoading(true); // Set loading state
+
     // Prepare the AI prompt
     const FINAL_PROMPT = AI_PROMPT
       .replace("{location}", formData.Destination)
@@ -107,16 +143,17 @@ function CreateTrip() {
       .replace("{budget}", formData.budget)
       .replace("{totaldays}", formData.days);
 
-    console.log("FINAL_PROMPT", FINAL_PROMPT);
-
     // Send the message for trip generation
     try {
       const result = await chatSession.sendMessage(FINAL_PROMPT);
       console.log("result", result?.response?.text());
       toast("Trip generated successfully!");
+      SaveAiTrip(result?.response?.text());
     } catch (error) {
       console.error("Error generating trip:", error);
       toast("Failed to generate trip. Please try again.");
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -197,7 +234,12 @@ function CreateTrip() {
 
       {/* Submit Button */}
       <div className="my-10 justify-end flex">
-        <Button onClick={onGenerateTrip}>Generate Trip</Button>
+        <Button disabled={loading} onClick={onGenerateTrip}>
+          {loading ? 
+          <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin"  />:
+          'Generate Trip'
+  } 
+        </Button>
       </div>
 
       {/* Auth Dialog */}
@@ -221,3 +263,4 @@ function CreateTrip() {
 }
 
 export default CreateTrip;
+
