@@ -1,26 +1,48 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { GetPlacesDetails } from "@/service/GlobalApi";
+import HotelCardItems from './HotelCardItems';
 
 function Hotels({ trip }) {
-  console.log("Hotels component trip data:", trip); // Debugging log
-  console.log("Hotel options:", trip?.tripData?.hotelOptions); // Debugging log
+  const [hotels, setHotels] = useState([]);
+
+  useEffect(() => {
+    if (trip?.userSelction?.Destination) {
+      fetchHotels(trip.userSelction.Destination);
+    }
+  }, [trip]);
+
+  const fetchHotels = async (destination) => {
+    try {
+      const result = await GetPlacesDetails({ textQuery: `hotels in ${destination}` });
+      console.log("Hotels API Response:", result); // Debugging log
+
+      if (result?.results) {
+        const hotelOptions = result.results.map((hotel) => ({
+          hotelName: hotel.name,
+          hotelAddress: hotel.formatted_address,
+          hotelImageUrl: hotel.photos?.[0]?.photo_reference
+            ? `https://maps.gomaps.pro/maps/api/place/photo?maxwidth=400&photo_reference=${hotel.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_PLACE_API_KEY}`
+            : "/logo.svg",
+          pricePerNight: hotel.price_level ? `$${hotel.price_level * 50}` : "N/A",
+          rating: hotel.rating || "No rating",
+        }));
+        setHotels(hotelOptions);
+      } else {
+        console.warn("No hotels found for this location.");
+        setHotels([]);
+      }
+    } catch (error) {
+      console.error("Error fetching hotels:", error);
+      setHotels([]);
+    }
+  };
 
   return (
-    <div>
-      <h2 className='font-bold text-xl mt-5'>Hotel Recommendation</h2>
-      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5'>
-        {trip?.tripData?.hotelOptions?.map((hotel, index) => (
-          <Link key={hotel.hotelName + index} to={'https://www.google.com/maps/search/?api=1&query=' + hotel.hotelName + "," + hotel?.hotelAddress} target='_blank'>
-            <div className='hover:scale-105 transition-all cursor-pointer'>
-              <img src={hotel?.hotelImageUrl || "/logo.svg"} className='h-[200px] w-full object-cover rounded' alt='Hotel' />
-              <div className='my-2 flex flex-col'>
-                <h2 className='font-medium'>{hotel?.hotelName}</h2>
-                <h2 className='text-xs text-gray-500'>📍{hotel?.hotelAddress}</h2>
-                <h2 className='text-sm '>💰{hotel?.pricePerNight}</h2>
-                <h2 className='text-sm'>⭐{hotel?.rating}</h2>
-              </div>
-            </div>
-          </Link>
+    <div className="mt-8 mb-8">
+      <h2 className="font-bold text-2xl mb-6">Hotel Recommendations</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {hotels.map((hotel, index) => (
+          <HotelCardItems key={index} hotel={hotel} index={index} />
         ))}
       </div>
     </div>

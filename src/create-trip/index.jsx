@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { AI_PROMPT, SelectBudgetOptions, SelectTravelesList } from "@/constants/options";
-import { toast } from "sonner";
 import { chatSession } from "@/service/AIModal";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FcGoogle } from "react-icons/fc";
@@ -13,6 +12,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/service/firebaseConfig";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 
 
@@ -110,52 +110,53 @@ function CreateTrip() {
 
   // Generate Trip
   const onGenerateTrip = async () => {
-    const user = localStorage.getItem("user");
-
-    // If user is not logged in, show the login dialog
+    const user = localStorage.getItem("userProfile");
+  
     if (!user) {
-      console.log("User not logged in, opening dialog...");
-      setOpenDailog(true); // Open the dialog for login
+      setOpenDailog(true);
+      toast.error("You need to sign in first!");
       return;
     }
-
-    // Validate form data
-    if (!formData?.Destination || !formData?.days || !formData?.budget || !formData?.travelers) {
-      console.log("Please fill all fields");
-      toast("Please fill all the fields");
+  
+    if (!formData.Destination || !formData.days || !formData.budget || !formData.travelers) {
+      toast.error("Please fill all fields before generating the trip.");
       return;
     }
-
-    // Ensure days is a valid number
+  
     if (isNaN(formData.days) || formData.days <= 0) {
-      console.log("Invalid number of days");
-      toast("Please enter a valid number of days");
+      toast.error("Please enter a valid number of days.");
       return;
     }
-
-    setLoading(true); // Set loading state
-
-    // Prepare the AI prompt
-    const FINAL_PROMPT = AI_PROMPT
-      .replace("{location}", formData.Destination)
-      .replace("{totalDays}", formData.days)
-      .replace("{traveler}", formData.travelers)
-      .replace("{budget}", formData.budget)
-      .replace("{totaldays}", formData.days);
-
-    // Send the message for trip generation
+  
+    setLoading(true);
+  
     try {
+      const FINAL_PROMPT = AI_PROMPT
+        .replace("{location}", formData.Destination)
+        .replace("{totalDays}", formData.days)
+        .replace("{traveler}", formData.travelers)
+        .replace("{budget}", formData.budget)
+        .replace("{totaldays}", formData.days);
+  
       const result = await chatSession.sendMessage(FINAL_PROMPT);
-      console.log("result", result?.response?.text());
-      toast("Trip generated successfully!");
-      SaveAiTrip(result?.response?.text());
+      const aiResponse = await result?.response?.text();
+  
+      if (!aiResponse) {
+        throw new Error("AI response is empty");
+      }
+  
+      toast.success("Trip generated successfully!");
+      await SaveAiTrip(aiResponse);
     } catch (error) {
       console.error("Error generating trip:", error);
-      toast("Failed to generate trip. Please try again.");
+      toast.error("Failed to generate trip. Please try again.");
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
+  
+  
+  
 
   return (
     <div className="sm:px-10 md:px-32 lg:px-64 xl:px-80 px-6 mt-10">
