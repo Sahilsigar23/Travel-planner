@@ -4,7 +4,8 @@ import axios from "axios";
 const GoMapAutocomplete = ({ onSelect }) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const API_KEY = "AlzaSySdDQnER9Pr9Ay8Mg_ZbHaonEbOxiFwUOs"; // Replace with your actual key
+
+  const API_KEY = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your actual key
 
   const fetchSuggestions = async (input) => {
     if (input.length < 3) {
@@ -16,20 +17,31 @@ const GoMapAutocomplete = ({ onSelect }) => {
       const response = await axios.get(
         `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${API_KEY}`
       );
-      setSuggestions(response.data.predictions || []);
+
+
+      if (response.data.status === "OK") {
+        setSuggestions(response.data.predictions || []);
+      } else {
+        console.error("API Error:", response.data.status);
+        setSuggestions([]);
+      }
     } catch (error) {
       console.error("Error fetching autocomplete results:", error);
+      setSuggestions([]);
+
     }
   };
 
   const handleSelectSuggestion = (place) => {
-    setQuery(place.description); // Update input field with selected place
-    setSuggestions([]); // Clear suggestions list after selection
-    onSelect(place.description); // Call onSelect prop with selected place
+
+    setQuery(place.description); // Set input value to selected place
+    setSuggestions([]); // Hide suggestions
+    onSelect(place.description); // Pass only the description to parent
   };
 
   return (
-    <div style={{ position: "relative", width: "300px" }}>
+    <div style={{ position: "relative", width: "100%" }}>
+
       <input
         type="text"
         value={query}
@@ -38,7 +50,15 @@ const GoMapAutocomplete = ({ onSelect }) => {
           fetchSuggestions(e.target.value);
         }}
         placeholder="Search for a place..."
-        style={{ width: "100%", padding: "8px" }}
+
+        style={{
+          width: "100%",
+          padding: "10px",
+          fontSize: "16px",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+        }}
+
       />
       {suggestions.length > 0 && (
         <ul
@@ -50,7 +70,13 @@ const GoMapAutocomplete = ({ onSelect }) => {
             width: "100%",
             background: "#fff",
             border: "1px solid #ccc",
+
+            borderRadius: "4px",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
             zIndex: 10,
+            maxHeight: "200px",
+            overflowY: "auto",
+
           }}
         >
           {suggestions.map((place, index) => (
@@ -58,9 +84,13 @@ const GoMapAutocomplete = ({ onSelect }) => {
               key={index}
               onClick={() => handleSelectSuggestion(place)}
               style={{
-                padding: "8px",
+
+                padding: "10px",
                 cursor: "pointer",
                 borderBottom: "1px solid #eee",
+                fontSize: "14px",
+                color: "#333",
+
               }}
             >
               {place.description}

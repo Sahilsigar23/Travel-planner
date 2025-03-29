@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-import GoMapAutocomplete from "./autocomplete"; 
-import { Input } from "@/components/ui/input";
+
 import { AI_PROMPT, SelectBudgetOptions, SelectTravelesList } from "@/constants/options";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { chatSession } from "@/service/AIModal";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"; 
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
-import axios from 'axios';
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import GoMapAutocomplete from "./autocomplete";
+import { Input } from "@/components/ui/input";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/service/firebaseConfig";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+
+
 
 function CreateTrip() {
   const [selectedDestination, setSelectedDestination] = useState("");
@@ -23,6 +31,10 @@ function CreateTrip() {
   });
 
   const [openDailog, setOpenDailog] = useState(false); // Dialog visibility state
+
+  const [loading, setLoading] = useState(false); // Loading state
+  const navigate=useNavigate();
+
 
   // Handle input changes and update formData
   const handleInputChange = (name, value) => {
@@ -39,66 +51,118 @@ function CreateTrip() {
     }
   }, [selectedDestination]);
 
+
+  // Google Login
   const login = useGoogleLogin({
     onSuccess: (codeResp) => {
-      console.log("codeResp", codeResp); 
-      localStorage.setItem("user", JSON.stringify(codeResp)); 
+      console.log("codeResp", codeResp);
+      localStorage.setItem("user", JSON.stringify(codeResp));
       toast.success("Login successful!");
       setOpenDailog(false); // Close the login dialog
+      GetUserProfile(codeResp); // Fetch user profile
+
     },
     onError: (error) => {
       console.log("error", error);
       toast.error("Login failed, please try again.");
-    }
+
+    },
   });
 
+  // Fetch user profile using access token
   const GetUserProfile = (tokenInfo) => {
-    axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo.access_token}`, {
-      headers: {
-        Authorization: `Bearer ${tokenInfo.access_token}`,
-        Accept: "application/json",
+    axios
+      .get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo.access_token}`, {
+        headers: {
+          Authorization: `Bearer ${tokenInfo.access_token}`,
+          Accept: "application/json",
+        },
+      })
+      .then((response) => {
+        console.log("User Profile:", response.data);
+        localStorage.setItem("userProfile", JSON.stringify(response.data)); // Store user profile
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
+      });
+  };
+
+  const SaveAiTrip = async (tripData) => {
+    setLoading(true);
+    const docId = Date.now().toString(); // Define docId outside the try block
+    try {
+      // Add a new document in collection "AITrips"
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      console.log("User Profile:", userProfile); // Debugging log
+      if (!userProfile || !userProfile.email) {
+        toast.error("User information is missing. Please log in again.");
+        setLoading(false);
+        return;
       }
-    })
-    .then((response) => {
-      console.log("response", response);
-    })
-    .catch((error) => {
-      console.error("Error fetching user profile:", error);
-    });
+      await setDoc(doc(db, "AITrips", docId), {
+        userSelction: formData,
+        tripData: JSON.parse(tripData),
+        userEmail: userProfile.email,
+        id: docId
+      });
+      toast.success("Trip saved successfully!");
+    } catch (error) {
+      console.error("Error saving trip:", error);
+      toast.error("Failed to save trip. Please try again.");
+    } finally {
+      setLoading(false);
+      navigate(`/view-trip/${docId}`); // Navigate to view trip page
+    }
   };
 
+  // Generate Trip
   const onGenerateTrip = async () => {
-    const user = localStorage.getItem("user");
-
-    // If user is not logged in, show the login dialog
+    const user = localStorage.getItem("userProfile");
+  
     if (!user) {
-      console.log("User not logged in, opening dialog...");
-      setOpenDailog(true); // Open the dialog for login
+      setOpenDailog(true);
+      toast.error("You need to sign in first!");
       return;
     }
-
-    // Validate form data
-    if (!formData?.Destination || !formData?.days || !formData?.budget || !formData?.travelers) {
-      console.log("Please fill all fields");
-      toast("Please fill all the fields");
+  
+    if (!formData.Destination || !formData.days || !formData.budget || !formData.travelers) {
+      toast.error("Please fill all fields before generating the trip.");
       return;
     }
-
-    // Prepare the AI prompt
-    const FINAL_PROMPT = AI_PROMPT
-      .replace("{location}", formData.Destination)
-      .replace("{totalDays}", formData.days)
-      .replace("{traveler}", formData.travelers)
-      .replace("{budget}", formData.budget)
-      .replace("{totaldays}", formData.days);
-
-    console.log("FINAL_PROMPT", FINAL_PROMPT);
-
-    // Send the message for trip generation
-    const result = await chatSession.sendMessage(FINAL_PROMPT);
-    console.log("result", result?.response?.text());
-    toast("Trip generated successfully!");
+  
+    if (isNaN(formData.days) || formData.days <= 0) {
+      toast.error("Please enter a valid number of days.");
+      return;
+    }
+  
+    setLoading(true);
+  
+    try {
+      const FINAL_PROMPT = AI_PROMPT
+        .replace("{location}", formData.Destination)
+        .replace("{totalDays}", formData.days)
+        .replace("{traveler}", formData.travelers)
+        .replace("{budget}", formData.budget)
+        .replace("{totaldays}", formData.days);
+  
+      const result = await chatSession.sendMessage(FINAL_PROMPT);
+      const aiResponse = await result?.response?.text();
+  
+      if (!aiResponse) {
+        throw new Error("AI response is empty");
+      }
+  
+      toast.success("Trip generated successfully!");
+      await SaveAiTrip(aiResponse);
+    } catch (error) {
+      console.error("Error generating trip:", error);
+      toast.error("Failed to generate trip. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+  
+
 
   return (
     <div className="sm:px-10 md:px-32 lg:px-64 xl:px-80 px-6 mt-10">
@@ -177,7 +241,14 @@ function CreateTrip() {
 
       {/* Submit Button */}
       <div className="my-10 justify-end flex">
-        <Button onClick={onGenerateTrip}>Generate Trip</Button>
+
+        <Button disabled={loading} onClick={onGenerateTrip}>
+          {loading ? 
+          <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin"  />:
+          'Generate Trip'
+  } 
+        </Button>
+
       </div>
 
       {/* Auth Dialog */}
@@ -185,11 +256,13 @@ function CreateTrip() {
         <DialogContent>
           <DialogHeader>
             <DialogDescription>
-              <img src="/logo.svg" />
+
+              <img src="/logo.svg" alt="Logo" />
               <h2 className="font-bold text-lg mt-7">Sign In With Google</h2>
               <p>Sign in to the app with Google authentication</p>
               <Button onClick={login} className="w-full mt-5">
-                <FcGoogle />
+                <FcGoogle className="mr-2" />
+
                 Sign In With Google
               </Button>
             </DialogDescription>
@@ -201,3 +274,4 @@ function CreateTrip() {
 }
 
 export default CreateTrip;
+
