@@ -181,17 +181,35 @@ function CreateTrip() {
 
       {/* Trip Duration Input */}
       <div className="mt-10">
-        <h2 className="text-xl my-3 font-medium">How many days are you planning your trip?</h2>
-        <Input
-          placeholder="Enter number of days"
-          type="number"
-          value={days}
-          onChange={(e) => {
-            setDays(e.target.value);
-            handleInputChange("days", e.target.value);
-          }}
-        />
-      </div>
+  <h2 className="text-xl my-3 font-medium">How many days are you planning your trip?</h2>
+  <Input
+    placeholder="Enter number of days"
+    type="number"
+    value={days}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      // Allow only positive integers and limit the range (e.g., 1–365 days)
+      if (/^\d*$/.test(value) && (value === "" || (parseInt(value) > 0 && parseInt(value) <= 365))) {
+        setDays(value);
+        handleInputChange("days", value);
+      } else {
+        toast.error("Please enter a valid number of days (1–365).");
+      }
+    }}
+    onBlur={() => {
+      // Ensure the input is not empty or invalid on blur
+      if (!days || parseInt(days) <= 0) {
+        toast.error("Please enter a valid number of days.");
+        setDays(""); // Reset the input
+        handleInputChange("days", "");
+      }
+    }}
+  />
+  {days && parseInt(days) > 365 && (
+    <p className="text-red-500 mt-2">The maximum allowed number of days is 365.</p>
+  )}
+</div>
 
       {/* Budget Selection */}
       <div className="mt-10 cursor-pointer">
