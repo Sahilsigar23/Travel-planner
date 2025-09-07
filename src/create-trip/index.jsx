@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-
 import { AI_PROMPT, SelectBudgetOptions, SelectTravelesList } from "@/constants/options";
-import { chatSession } from "@/service/AIModal";
+import { getChatSession } from "@/service/AIModal";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -14,9 +13,6 @@ import { db } from "@/service/firebaseConfig";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-
-
 
 function CreateTrip() {
   const [selectedDestination, setSelectedDestination] = useState("");
@@ -34,8 +30,6 @@ function CreateTrip() {
 
   const [loading, setLoading] = useState(false); // Loading state
   const navigate=useNavigate();
-
-
   // Handle input changes and update formData
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({
@@ -51,8 +45,6 @@ function CreateTrip() {
     }
   }, [selectedDestination]);
 
-
-  // Google Login
   const login = useGoogleLogin({
     onSuccess: (codeResp) => {
       console.log("codeResp", codeResp);
@@ -60,12 +52,10 @@ function CreateTrip() {
       toast.success("Login successful!");
       setOpenDailog(false); // Close the login dialog
       GetUserProfile(codeResp); // Fetch user profile
-
     },
     onError: (error) => {
       console.log("error", error);
       toast.error("Login failed, please try again.");
-
     },
   });
 
@@ -145,7 +135,8 @@ function CreateTrip() {
         .replace("{budget}", formData.budget)
         .replace("{totaldays}", formData.days);
   
-      const result = await chatSession.sendMessage(FINAL_PROMPT);
+      const session = await getChatSession();
+      const result = await session.sendMessage(FINAL_PROMPT);
       const aiResponse = await result?.response?.text();
   
       if (!aiResponse) {
@@ -161,8 +152,6 @@ function CreateTrip() {
       setLoading(false);
     }
   };
-  
-
 
   return (
     <div className="sm:px-10 md:px-32 lg:px-64 xl:px-80 px-6 mt-10">
@@ -181,35 +170,32 @@ function CreateTrip() {
 
       {/* Trip Duration Input */}
       <div className="mt-10">
-  <h2 className="text-xl my-3 font-medium">How many days are you planning your trip?</h2>
-  <Input
-    placeholder="Enter number of days"
-    type="number"
-    value={days}
-    onChange={(e) => {
-      const value = e.target.value;
-
-      // Allow only positive integers and limit the range (e.g., 1–365 days)
-      if (/^\d*$/.test(value) && (value === "" || (parseInt(value) > 0 && parseInt(value) <= 365))) {
-        setDays(value);
-        handleInputChange("days", value);
-      } else {
-        toast.error("Please enter a valid number of days (1–365).");
-      }
-    }}
-    onBlur={() => {
-      // Ensure the input is not empty or invalid on blur
-      if (!days || parseInt(days) <= 0) {
-        toast.error("Please enter a valid number of days.");
-        setDays(""); // Reset the input
-        handleInputChange("days", "");
-      }
-    }}
-  />
-  {days && parseInt(days) > 365 && (
-    <p className="text-red-500 mt-2">The maximum allowed number of days is 365.</p>
-  )}
-</div>
+        <h2 className="text-xl my-3 font-medium">How many days are you planning your trip?</h2>
+        <Input
+          placeholder="Enter number of days"
+          type="number"
+          value={days}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value) && (value === "" || (parseInt(value) > 0 && parseInt(value) <= 365))) {
+              setDays(value);
+              handleInputChange("days", value);
+            } else {
+              toast.error("Please enter a valid number of days (1–365).");
+            }
+          }}
+          onBlur={() => {
+            if (!days || parseInt(days) <= 0) {
+              toast.error("Please enter a valid number of days.");
+              setDays("");
+              handleInputChange("days", "");
+            }
+          }}
+        />
+        {days && parseInt(days) > 365 && (
+          <p className="text-red-500 mt-2">The maximum allowed number of days is 365.</p>
+        )}
+      </div>
 
       {/* Budget Selection */}
       <div className="mt-10 cursor-pointer">
@@ -259,14 +245,13 @@ function CreateTrip() {
 
       {/* Submit Button */}
       <div className="my-10 justify-end flex">
-
         <Button disabled={loading} onClick={onGenerateTrip}>
-          {loading ? 
-          <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin"  />:
-          'Generate Trip'
-  } 
+          {loading ? (
+            <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin" />
+          ) : (
+            'Generate Trip'
+          )}
         </Button>
-
       </div>
 
       {/* Auth Dialog */}
@@ -274,13 +259,11 @@ function CreateTrip() {
         <DialogContent>
           <DialogHeader>
             <DialogDescription>
-
               <img src="/logo.svg" alt="Logo" />
               <h2 className="font-bold text-lg mt-7">Sign In With Google</h2>
               <p>Sign in to the app with Google authentication</p>
               <Button onClick={login} className="w-full mt-5">
                 <FcGoogle className="mr-2" />
-
                 Sign In With Google
               </Button>
             </DialogDescription>
