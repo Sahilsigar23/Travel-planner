@@ -39,17 +39,19 @@ function HotelCardItems({ hotel, index }) {
         target="_blank"
       >
         <img
-          src={photoUrl || `/OIP(${(index % 5) + 11}).webp`}
+          src={photoUrl || `https://images.unsplash.com/photo-${['1566073771259-6a8506099945', '1551882547-ff40c63fe5fa', '1582719478250-c89cae4dc85b', '1564501049412-61c2a3083791', '1571896349842-33c89424de2d'][index % 5]}?w=400&h=300&fit=crop`}
           alt={hotel.hotelName}
           className="w-full h-48 object-cover"
           onError={(e) => {
-            // Fallback chain: try different hotel images, then placeholder
-            if (e.target.src.includes('OIP')) {
-              e.target.src = '/placeholder.jpg';
-            } else if (e.target.src.includes('placeholder')) {
-              e.target.src = '/image.png';
-            } else if (!e.target.src.includes('logo.svg')) {
-              e.target.src = '/logo.svg';
+            // Fallback chain: try different hotel images from CDN
+            if (e.target.src.includes('photo-1566073771259')) {
+              e.target.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=300&fit=crop';
+            } else if (e.target.src.includes('photo-1551882547')) {
+              e.target.src = 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop';
+            } else if (e.target.src.includes('photo-1582719478')) {
+              e.target.src = 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&h=300&fit=crop';
+            } else {
+              e.target.src = 'https://via.placeholder.com/400x300/f0f0f0/666666?text=Hotel+Image';
             }
           }}
         />

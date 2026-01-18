@@ -39,17 +39,19 @@ function PlaceCardItems({ place }) {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform hover:-translate-y-1">
       <Link to={'https://www.google.com/maps/search/?api=1&query=' + (place?.placeName || 'place')} target='_blank'>
         <img
-          src={photoUrl || `/OIP(${(Math.abs((place?.placeName || 'place').length) % 5) + 11}).webp`}
+          src={photoUrl || `https://images.unsplash.com/photo-${['1501594907352-04cda38ebc29', '1539037116277-f6e0a434a9af', '1522199755839-a2bacb67c546', '1513581566782-56663dddc04a', '1506905925346-21bda4d32df4'][Math.abs((place?.placeName || 'place').length) % 5]}?w=400&h=300&fit=crop`}
           className="w-full h-48 object-cover"
           alt={place?.placeName || 'Place'}
           onError={(e) => {
-            // Fallback chain: try different place images, then placeholder
-            if (e.target.src.includes('OIP')) {
-              e.target.src = '/placeholder.jpg';
-            } else if (e.target.src.includes('placeholder')) {
-              e.target.src = '/image.png';
-            } else if (!e.target.src.includes('logo.svg')) {
-              e.target.src = '/logo.svg';
+            // Fallback chain: try different place images from CDN
+            if (e.target.src.includes('photo-1501594907352')) {
+              e.target.src = 'https://images.unsplash.com/photo-1539037116277-f6e0a434a9af?w=400&h=300&fit=crop';
+            } else if (e.target.src.includes('photo-1539037116277')) {
+              e.target.src = 'https://images.unsplash.com/photo-1522199755839-a2bacb67c546?w=400&h=300&fit=crop';
+            } else if (e.target.src.includes('photo-1522199755839')) {
+              e.target.src = 'https://images.unsplash.com/photo-1513581566782-56663dddc04a?w=400&h=300&fit=crop';
+            } else {
+              e.target.src = 'https://via.placeholder.com/400x300/e0e0e0/777777?text=Travel+Destination';
             }
           }}
         />

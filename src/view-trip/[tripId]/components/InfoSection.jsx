@@ -42,17 +42,19 @@ function InfoSection({ trip }) {
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Trip Image */}
       <img
-        src={photoUrl || `/OIP(${(Math.abs((trip?.userSelction?.Destination || 'destination').length) % 5) + 11}).webp`}
+        src={photoUrl || `https://images.unsplash.com/photo-${['1469474968028-56623f02e42e', '1506905925346-21bda4d32df4', '1501594907352-04cda38ebc29', '1488646953014-e52207ff29db', '1524492412873-47ba467cea47'][Math.abs((trip?.userSelction?.Destination || 'destination').length) % 5]}?w=800&h=400&fit=crop`}
         className="h-64 w-full object-cover"
         alt={trip?.userSelction?.Destination || 'Trip'}
         onError={(e) => {
-          // Fallback chain: try different destination images, then placeholder
-          if (e.target.src.includes('OIP')) {
-            e.target.src = '/placeholder.jpg';
-          } else if (e.target.src.includes('placeholder')) {
-            e.target.src = '/image.png';
-          } else if (!e.target.src.includes('logo.svg')) {
-            e.target.src = '/logo.svg';
+          // Fallback chain: try different destination images from CDN
+          if (e.target.src.includes('photo-1469474968028')) {
+            e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop';
+          } else if (e.target.src.includes('photo-1506905925346')) {
+            e.target.src = 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&h=400&fit=crop';
+          } else if (e.target.src.includes('photo-1501594907352')) {
+            e.target.src = 'https://images.unsplash.com/photo-1488646953014-e52207ff29db?w=800&h=400&fit=crop';
+          } else {
+            e.target.src = 'https://via.placeholder.com/800x400/d0d0d0/888888?text=Travel+Destination';
           }
         }}
       />

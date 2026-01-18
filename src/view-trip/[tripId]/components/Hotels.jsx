@@ -16,28 +16,28 @@ function Hotels({ trip }) {
     {
       hotelName: `${destination} Central Hotel`,
       hotelAddress: `Downtown ${destination}`,
-      hotelImageUrl: `/OIP(11).webp`,
+      hotelImageUrl: `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop`,
       pricePerNight: "$80-120",
       rating: 4.2,
     },
     {
       hotelName: `Budget Inn ${destination}`,
       hotelAddress: `Near City Center, ${destination}`,
-      hotelImageUrl: `/OIP(12).webp`,
+      hotelImageUrl: `https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=300&fit=crop`,
       pricePerNight: "$50-80",
       rating: 3.8,
     },
     {
       hotelName: `Luxury Resort ${destination}`,
       hotelAddress: `Premium Area, ${destination}`,
-      hotelImageUrl: `/OIP(13).webp`,
+      hotelImageUrl: `https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop`,
       pricePerNight: "$150-250",
       rating: 4.5,
     },
     {
       hotelName: `Business Hotel ${destination}`,
       hotelAddress: `Business District, ${destination}`,
-      hotelImageUrl: `/OIP(14).webp`,
+      hotelImageUrl: `https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&h=300&fit=crop`,
       pricePerNight: "$90-140",
       rating: 4.1,
     }
@@ -53,7 +53,7 @@ function Hotels({ trip }) {
           hotelAddress: hotel.formatted_address,
           hotelImageUrl: hotel.photos?.[0]?.photo_reference
             ? `https://maps.gomaps.pro/maps/api/place/photo?maxwidth=400&photo_reference=${hotel.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_PLACE_API_KEY}`
-            : `/OIP(${Math.floor(Math.random() * 5) + 11}).webp`,
+            : `https://images.unsplash.com/photo-${['1566073771259-6a8506099945', '1551882547-ff40c63fe5fa', '1582719478250-c89cae4dc85b', '1564501049412-61c2a3083791', '1571896349842-33c89424de2d'][Math.floor(Math.random() * 5)]}?w=400&h=300&fit=crop`,
           pricePerNight: hotel.price_level ? `$${hotel.price_level * 50}` : "N/A",
           rating: hotel.rating || "No rating",
         }));

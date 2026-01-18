@@ -52,17 +52,19 @@ function UserTripCardItem({ trip }) {
             <div className="animate-pulse bg-gray-200 rounded-lg h-[220px] w-full" />
           ) : (
             <img
-              src={photoUrl || `/OIP(${(Math.abs((trip?.userSelction?.Destination || 'trip').length) % 5) + 11}).webp`}
+              src={photoUrl || `https://images.unsplash.com/photo-${['1488646953014-e52207ff29db', '1506905925346-21bda4d32df4', '1469474968028-56623f02e42e', '1501594907352-04cda38ebc29', '1524492412873-47ba467cea47'][Math.abs((trip?.userSelction?.Destination || 'trip').length) % 5]}?w=400&h=220&fit=crop`}
               alt={trip?.tripData?.location || "Trip Image"}
               className="object-cover rounded-lg h-[220px] w-full"
               onError={(e) => {
-                // Fallback chain: try different trip images, then placeholder
-                if (e.target.src.includes('OIP')) {
-                  e.target.src = '/placeholder.jpg';
-                } else if (e.target.src.includes('placeholder')) {
-                  e.target.src = '/image.png';
-                } else if (!e.target.src.includes('logo.svg')) {
-                  e.target.src = '/logo.svg';
+                // Fallback chain: try different trip images from CDN
+                if (e.target.src.includes('photo-1488646953014')) {
+                  e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=220&fit=crop';
+                } else if (e.target.src.includes('photo-1506905925346')) {
+                  e.target.src = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=220&fit=crop';
+                } else if (e.target.src.includes('photo-1469474968028')) {
+                  e.target.src = 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=400&h=220&fit=crop';
+                } else {
+                  e.target.src = 'https://via.placeholder.com/400x220/e5e5e5/999999?text=Trip+Image';
                 }
               }}
             />
