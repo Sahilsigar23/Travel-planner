@@ -42,7 +42,7 @@ function InfoSection({ trip }) {
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {/* Trip Image */}
       <img
-        src={photoUrl || `/OIP (${(Math.abs((trip?.userSelction?.Destination || 'destination').length) % 5) + 11}).webp`}
+        src={photoUrl || `/OIP(${(Math.abs((trip?.userSelction?.Destination || 'destination').length) % 5) + 11}).webp`}
         className="h-64 w-full object-cover"
         alt={trip?.userSelction?.Destination || 'Trip'}
         onError={(e) => {

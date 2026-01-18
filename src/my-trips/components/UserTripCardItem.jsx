@@ -52,7 +52,7 @@ function UserTripCardItem({ trip }) {
             <div className="animate-pulse bg-gray-200 rounded-lg h-[220px] w-full" />
           ) : (
             <img
-              src={photoUrl || `/OIP (${(Math.abs((trip?.userSelction?.Destination || 'trip').length) % 5) + 11}).webp`}
+              src={photoUrl || `/OIP(${(Math.abs((trip?.userSelction?.Destination || 'trip').length) % 5) + 11}).webp`}
               alt={trip?.tripData?.location || "Trip Image"}
               className="object-cover rounded-lg h-[220px] w-full"
               onError={(e) => {

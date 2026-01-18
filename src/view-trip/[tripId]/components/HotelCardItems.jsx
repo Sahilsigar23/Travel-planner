@@ -39,7 +39,7 @@ function HotelCardItems({ hotel, index }) {
         target="_blank"
       >
         <img
-          src={photoUrl || `/OIP (${(index % 5) + 11}).webp`}
+          src={photoUrl || `/OIP(${(index % 5) + 11}).webp`}
           alt={hotel.hotelName}
           className="w-full h-48 object-cover"
           onError={(e) => {

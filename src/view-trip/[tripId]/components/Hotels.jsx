@@ -16,28 +16,28 @@ function Hotels({ trip }) {
     {
       hotelName: `${destination} Central Hotel`,
       hotelAddress: `Downtown ${destination}`,
-      hotelImageUrl: `/OIP (11).webp`,
+      hotelImageUrl: `/OIP(11).webp`,
       pricePerNight: "$80-120",
       rating: 4.2,
     },
     {
       hotelName: `Budget Inn ${destination}`,
       hotelAddress: `Near City Center, ${destination}`,
-      hotelImageUrl: `/OIP (12).webp`,
+      hotelImageUrl: `/OIP(12).webp`,
       pricePerNight: "$50-80",
       rating: 3.8,
     },
     {
       hotelName: `Luxury Resort ${destination}`,
       hotelAddress: `Premium Area, ${destination}`,
-      hotelImageUrl: `/OIP (13).webp`,
+      hotelImageUrl: `/OIP(13).webp`,
       pricePerNight: "$150-250",
       rating: 4.5,
     },
     {
       hotelName: `Business Hotel ${destination}`,
       hotelAddress: `Business District, ${destination}`,
-      hotelImageUrl: `/OIP (14).webp`,
+      hotelImageUrl: `/OIP(14).webp`,
       pricePerNight: "$90-140",
       rating: 4.1,
     }
@@ -46,7 +46,6 @@ function Hotels({ trip }) {
   const fetchHotels = async (destination) => {
     try {
       const result = await GetPlacesDetails({ textQuery: `hotels in ${destination}` });
-      console.log("Hotels API Response:", result); // Debugging log
 
       if (result?.results && result.results.length > 0) {
         const hotelOptions = result.results.map((hotel) => ({
@@ -54,18 +53,15 @@ function Hotels({ trip }) {
           hotelAddress: hotel.formatted_address,
           hotelImageUrl: hotel.photos?.[0]?.photo_reference
             ? `https://maps.gomaps.pro/maps/api/place/photo?maxwidth=400&photo_reference=${hotel.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_PLACE_API_KEY}`
-            : `/OIP (${Math.floor(Math.random() * 5) + 11}).webp`,
+            : `/OIP(${Math.floor(Math.random() * 5) + 11}).webp`,
           pricePerNight: hotel.price_level ? `$${hotel.price_level * 50}` : "N/A",
           rating: hotel.rating || "No rating",
         }));
         setHotels(hotelOptions);
       } else {
-        console.warn("No hotels found via API, using fallback data for:", destination);
         setHotels(getFallbackHotels(destination));
       }
     } catch (error) {
-      console.error("Error fetching hotels:", error);
-      console.log("Using fallback hotel data for:", destination);
       setHotels(getFallbackHotels(destination));
     }
   };

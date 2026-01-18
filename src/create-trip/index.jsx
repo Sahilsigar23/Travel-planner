@@ -55,7 +55,6 @@ function CreateTrip() {
   // Google Login
   const login = useGoogleLogin({
     onSuccess: (codeResp) => {
-      console.log("codeResp", codeResp);
       localStorage.setItem("user", JSON.stringify(codeResp));
       toast.success("Login successful!");
       setOpenDailog(false); // Close the login dialog
@@ -63,7 +62,6 @@ function CreateTrip() {
 
     },
     onError: (error) => {
-      console.log("error", error);
       toast.error("Login failed, please try again.");
 
     },
@@ -79,11 +77,10 @@ function CreateTrip() {
         },
       })
       .then((response) => {
-        console.log("User Profile:", response.data);
         localStorage.setItem("userProfile", JSON.stringify(response.data)); // Store user profile
       })
       .catch((error) => {
-        console.error("Error fetching user profile:", error);
+        // Handle error silently
       });
   };
 
@@ -197,27 +194,6 @@ function CreateTrip() {
       <p className="mt-3 text-gray-500 text-xl">Plan your perfect getaway with ease and precision.</p>
       <p className="mt-3 text-gray-500 text-xl">Just provide basic information.</p>
       
-      {/* API Status Info */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">AI-Powered Trip Generation</h3>
-            <div className="mt-2 text-sm text-blue-700">
-              <p>This app uses Google Gemini AI to create personalized travel plans. If you encounter quota limits, try:</p>
-              <ul className="mt-1 list-disc list-inside">
-                <li>Wait a few minutes and try again</li>
-                <li>Check your <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a> quota</li>
-                <li>Ensure your API key has sufficient credits</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Destination Selection */}
       <div className="mt-20 flex flex-col">
@@ -305,33 +281,6 @@ function CreateTrip() {
         </div>
       </div>
 
-      {/* Test API Button */}
-      <div className="mt-10 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h3 className="text-lg font-medium text-yellow-800 mb-3">🔧 Debug API Connection</h3>
-        <Button 
-          onClick={async () => {
-            try {
-              setLoading(true);
-              toast.info("Testing Gemini AI connection...");
-              const result = await testConnection();
-              toast.success("✅ API Connection Working! Response: " + result);
-            } catch (error) {
-              console.error("API Test Error:", error);
-              toast.error("❌ API Test Failed: " + error.message);
-            } finally {
-              setLoading(false);
-            }
-          }}
-          disabled={loading}
-          variant="outline"
-          className="mr-4"
-        >
-          Test API Connection
-        </Button>
-        <p className="text-sm text-yellow-700 mt-2">
-          Click this button first to test if your Gemini AI key is working
-        </p>
-      </div>
 
       {/* Submit Button */}
       <div className="my-10 justify-end flex">

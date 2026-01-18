@@ -39,7 +39,7 @@ function PlaceCardItems({ place }) {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform hover:-translate-y-1">
       <Link to={'https://www.google.com/maps/search/?api=1&query=' + (place?.placeName || 'place')} target='_blank'>
         <img
-          src={photoUrl || `/OIP (${(Math.abs((place?.placeName || 'place').length) % 5) + 11}).webp`}
+          src={photoUrl || `/OIP(${(Math.abs((place?.placeName || 'place').length) % 5) + 11}).webp`}
           className="w-full h-48 object-cover"
           alt={place?.placeName || 'Place'}
           onError={(e) => {
