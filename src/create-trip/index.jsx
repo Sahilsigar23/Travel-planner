@@ -167,7 +167,10 @@ function CreateTrip() {
       console.error("Error generating trip:", error);
       
       // Handle specific error types
-      if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests")) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("503") || msg.includes("overloaded") || msg.includes("high demand") || msg.includes("unavailable")) {
+        toast.error("🚦 The AI servers are busy right now. We retried a few times — please try again in a moment.");
+      } else if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests")) {
         toast.error("⚠️ API quota exceeded! Please try again in a few minutes, or check your Gemini AI quota limits.");
       } else if (error.message?.includes("401") || error.message?.includes("unauthorized")) {
         toast.error("❌ Invalid API key. Please check your Gemini AI configuration.");

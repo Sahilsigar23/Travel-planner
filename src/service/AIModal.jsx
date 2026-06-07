@@ -5,58 +5,96 @@ if (!apiKey) throw new Error("API key missing");
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// Working model - will be updated dynamically
-let workingModel = genAI.getGenerativeModel({
-  model: "models/gemini-2.5-flash",
-});
+// Tried in order. If one model is overloaded (503) or rate-limited (429),
+// we retry it a few times, then fall back to the next one.
+const MODEL_FALLBACKS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-001",
+  "gemini-flash-latest",
+];
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// 503 (overloaded / high demand) and 429 (rate limit) are transient — worth retrying.
+const isTransient = (err) => {
+  const status = err?.status ?? err?.response?.status;
+  const msg = (err?.message || "").toLowerCase();
+  return (
+    status === 503 ||
+    status === 429 ||
+    msg.includes("503") ||
+    msg.includes("429") ||
+    msg.includes("overloaded") ||
+    msg.includes("high demand") ||
+    msg.includes("unavailable") ||
+    msg.includes("rate limit") ||
+    msg.includes("try again")
+  );
+};
+
+const MAX_ATTEMPTS_PER_MODEL = 3;
+
+async function generateWithRetry(message) {
+  let lastError;
+
+  for (const modelName of MODEL_FALLBACKS) {
+    const model = genAI.getGenerativeModel({ model: modelName });
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS_PER_MODEL; attempt++) {
+      try {
+        const result = await model.generateContent(message);
+        if (modelName !== MODEL_FALLBACKS[0]) {
+          console.log(`✅ Generated using fallback model: ${modelName}`);
+        }
+        return result; // shape: { response } — caller uses result.response.text()
+      } catch (error) {
+        lastError = error;
+
+        // Non-transient errors (bad key, invalid request, etc.) — fail fast.
+        if (!isTransient(error)) throw error;
+
+        if (attempt < MAX_ATTEMPTS_PER_MODEL) {
+          // Exponential backoff with jitter: ~1s, ~2s, ~4s
+          const delay = 1000 * 2 ** (attempt - 1) + Math.floor(Math.random() * 500);
+          console.warn(
+            `⚠️ ${modelName} busy (attempt ${attempt}/${MAX_ATTEMPTS_PER_MODEL}). Retrying in ${delay}ms…`
+          );
+          await sleep(delay);
+        } else {
+          console.warn(`↪️ ${modelName} still busy — falling back to next model…`);
+        }
+      }
+    }
+  }
+
+  // All models exhausted.
+  throw lastError;
+}
 
 export const testConnection = async () => {
   try {
-    console.log("🔍 Testing API Key:", apiKey.substring(0, 20) + "...");
-    
-    // First, let's see what models are actually available
-    console.log("🔍 Listing available models...");
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+    );
     const modelsData = await response.json();
-    
     if (response.ok && modelsData.models) {
-      console.log("✅ Available models:", modelsData.models.map(m => m.name));
-      
-      // Try the first available model that supports generateContent
-      const bestModel = modelsData.models.find(m => 
-        m.supportedGenerationMethods && 
-        m.supportedGenerationMethods.includes('generateContent')
-      );
-      
-      if (bestModel) {
-        console.log("🎯 Using working model:", bestModel.name);
-        const testModel = genAI.getGenerativeModel({ model: bestModel.name });
-        const result = await testModel.generateContent("Reply with: API OK");
-        const text = await result.response.text();
-        console.log("✅ Success:", text);
-        
-        // Update the global model for chat session
-        workingModel = testModel;
-        return text;
-      } else {
-        throw new Error("No models support generateContent");
-      }
-    } else {
-      console.error("❌ Failed to list models:", modelsData);
-      throw new Error(`API key invalid or expired. Response: ${response.status} ${modelsData.error?.message || 'Unknown error'}`);
+      console.log("✅ Available models:", modelsData.models.map((m) => m.name));
+      return "API OK";
     }
-    
+    throw new Error(
+      `API key invalid or expired. Response: ${response.status} ${
+        modelsData.error?.message || "Unknown error"
+      }`
+    );
   } catch (error) {
     console.error("❌ Connection test failed:", error);
     throw error;
   }
 };
 
-let chat = null;
-
 export const chatSession = {
-  sendMessage: async (message) => {
-    if (!chat) chat = workingModel.startChat();
-    return chat.sendMessage(message);
-  },
+  // Kept the same interface the rest of the app relies on:
+  // `const result = await chatSession.sendMessage(prompt); result.response.text()`
+  sendMessage: (message) => generateWithRetry(message),
 };
