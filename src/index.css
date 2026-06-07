@@ -96,5 +96,133 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
   }
+}
+
+/* ============================================================
+   Professional UI — animations & utilities
+   ============================================================ */
+
+/* Slow zoom/pan for background slideshow (Ken Burns effect) */
+@keyframes kenburns {
+  0%   { transform: scale(1.05) translate(0, 0); }
+  100% { transform: scale(1.18) translate(-1.5%, -1.5%); }
+}
+
+/* Crossfade between slides */
+@keyframes slideFade {
+  0%, 8%    { opacity: 0; }
+  18%, 92%  { opacity: 1; }
+  100%      { opacity: 0; }
+}
+
+/* Soft gradient drift for animated text */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Entrance reveal */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Floating orbs / subtle motion */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+
+/* Scroll-cue bounce */
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50%      { transform: translateY(8px); opacity: 1; }
+}
+
+.animate-kenburns  { animation: kenburns 12s ease-out infinite alternate; }
+.animate-float     { animation: float 6s ease-in-out infinite; }
+.animate-bounceDown{ animation: bounceDown 1.8s ease-in-out infinite; }
+
+.animate-fadeUp {
+  opacity: 0;
+  animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.25s; }
+.delay-300 { animation-delay: 0.4s; }
+.delay-400 { animation-delay: 0.55s; }
+.delay-500 { animation-delay: 0.7s; }
+
+/* Animated gradient headline text */
+.text-gradient {
+  background: linear-gradient(110deg, #f6450f, #ff8a3d, #ffb347, #f6450f);
+  background-size: 250% 250%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 6s ease infinite;
+}
+
+/* Glass surface */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Frosted content card that blends with the dark background.
+   Low-contrast hairline border + soft ambient shadow + a faint inset
+   top highlight, so cards feel naturally embedded/elevated rather
+   than outlined and "pasted on top". */
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Floating surfaces (modals, popovers, dropdown menus).
+   Slightly more opaque than .glass-card for legibility, same
+   border / radius / shadow language so everything matches. */
+.glass-overlay {
+  background: rgba(17, 24, 39, 0.82);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* Inputs on dark/glass surfaces */
+.input-dark {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+}
+.input-dark::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-kenburns, .animate-float, .animate-bounceDown,
+  .animate-fadeUp, .text-gradient { animation: none !important; }
+  .animate-fadeUp { opacity: 1; }
 }

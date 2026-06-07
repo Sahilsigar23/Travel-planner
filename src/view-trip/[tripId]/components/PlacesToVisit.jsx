@@ -52,15 +52,19 @@ const PlacesToVisit = ({ trip }) => {
   const sortedDays = Object.keys(placesData).sort();
 
   return (
-    <div className="mt-8 mb-8">
-      <h2 className="font-bold text-2xl mb-6">Places To Visit</h2>
+    <div className="mt-12 mb-8">
+      <h2 className="font-bold text-2xl sm:text-3xl mb-6 text-white flex items-center gap-3">
+        🗺️ Places To Visit
+      </h2>
       <div className="space-y-6">
         {sortedDays.map((dayKey, index) => (
           <div
             key={index}
-            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-6"
+            className="glass-card rounded-2xl p-6"
           >
-            <h2 className="font-semibold text-xl text-gray-800 mb-4">{dayKey}</h2>
+            <h2 className="mb-4 inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">
+              {dayKey}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(placesData[dayKey]?.plan || placesData[dayKey]?.itinerary || []).map((planItem, planIndex) => (
                 <div key={planIndex}>

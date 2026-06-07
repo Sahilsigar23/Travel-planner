@@ -32,7 +32,7 @@ function HotelCardItems({ hotel, index }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform hover:-translate-y-1">
+    <div className="glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
       <Link
         key={`${hotel.hotelName}-${index}`}
         to={`https://maps.gomaps.pro/maps/search/?api=1&query=${encodeURIComponent(hotel.hotelName)},${encodeURIComponent(hotel.hotelAddress)}`}
@@ -56,10 +56,10 @@ function HotelCardItems({ hotel, index }) {
           }}
         />
         <div className="p-4">
-          <h2 className="font-semibold text-lg text-gray-800">{hotel.hotelName}</h2>
-          <p className="text-sm text-gray-600 mt-1">📍 {hotel.hotelAddress}</p>
-          <p className="text-sm text-green-600 mt-1">💰 {hotel.pricePerNight}</p>
-          <p className="text-sm text-yellow-600 mt-1">⭐ {hotel.rating}</p>
+          <h2 className="font-semibold text-lg text-white">{hotel.hotelName}</h2>
+          <p className="text-sm text-white/70 mt-1">📍 {hotel.hotelAddress}</p>
+          <p className="text-sm text-green-400 mt-1">💰 {hotel.pricePerNight}</p>
+          <p className="text-sm text-yellow-400 mt-1">⭐ {hotel.rating}</p>
         </div>
       </Link>
     </div>

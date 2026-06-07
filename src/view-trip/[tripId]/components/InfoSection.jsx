@@ -39,40 +39,47 @@ function InfoSection({ trip }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="relative h-[340px] w-full overflow-hidden rounded-3xl shadow-2xl sm:h-[420px]">
       {/* Trip Image */}
       <img
-        src={photoUrl || `https://images.unsplash.com/photo-${['1469474968028-56623f02e42e', '1506905925346-21bda4d32df4', '1501594907352-04cda38ebc29', '1488646953014-e52207ff29db', '1524492412873-47ba467cea47'][Math.abs((trip?.userSelction?.Destination || 'destination').length) % 5]}?w=800&h=400&fit=crop`}
-        className="h-64 w-full object-cover"
+        src={photoUrl || `https://images.unsplash.com/photo-${['1469474968028-56623f02e42e', '1506905925346-21bda4d32df4', '1501594907352-04cda38ebc29', '1488646953014-e52207ff29db', '1524492412873-47ba467cea47'][Math.abs((trip?.userSelction?.Destination || 'destination').length) % 5]}?w=1200&h=600&fit=crop`}
+        className="h-full w-full object-cover"
         alt={trip?.userSelction?.Destination || 'Trip'}
         onError={(e) => {
           // Fallback chain: try different destination images from CDN
           if (e.target.src.includes('photo-1469474968028')) {
-            e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop';
+            e.target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop';
           } else if (e.target.src.includes('photo-1506905925346')) {
-            e.target.src = 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&h=400&fit=crop';
+            e.target.src = 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=1200&h=600&fit=crop';
           } else if (e.target.src.includes('photo-1501594907352')) {
-            e.target.src = 'https://images.unsplash.com/photo-1488646953014-e52207ff29db?w=800&h=400&fit=crop';
+            e.target.src = 'https://images.unsplash.com/photo-1488646953014-e52207ff29db?w=1200&h=600&fit=crop';
           } else {
-            e.target.src = 'https://via.placeholder.com/800x400/d0d0d0/888888?text=Travel+Destination';
+            e.target.src = 'https://via.placeholder.com/1200x600/d0d0d0/888888?text=Travel+Destination';
           }
         }}
       />
 
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20" />
+
       {/* Trip Details */}
-      <div className="p-6">
-        <h2 className="font-bold text-3xl text-gray-800 mb-4">
+      <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
+        <span className="glass mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-white">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-orange-400" />
+          Your itinerary is ready
+        </span>
+        <h2 className="font-extrabold text-3xl sm:text-5xl text-white drop-shadow-lg">
           {trip?.userSelction?.Destination}
         </h2>
-        <div className="flex flex-wrap gap-3">
-          <div className="bg-gray-100 rounded-full px-4 py-2 text-sm text-gray-600">
-            📅 {trip?.userSelction?.days} Day
+        <div className="mt-5 flex flex-wrap gap-3">
+          <div className="glass rounded-full px-4 py-2 text-sm font-medium text-white">
+            📅 {trip?.userSelction?.days} Days
           </div>
-          <div className="bg-gray-100 rounded-full px-4 py-2 text-sm text-gray-600">
+          <div className="glass rounded-full px-4 py-2 text-sm font-medium text-white">
             💰 {trip?.userSelction?.budget} Budget
           </div>
-          <div className="bg-gray-100 rounded-full px-4 py-2 text-sm text-gray-600">
-            🥂 No. of Traveler: {trip?.userSelction?.travelers}
+          <div className="glass rounded-full px-4 py-2 text-sm font-medium text-white">
+            🥂 {trip?.userSelction?.travelers} Travelers
           </div>
         </div>
       </div>

@@ -14,6 +14,7 @@ import { db } from "@/service/firebaseConfig";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import MovingBackground from "@/components/custom/MovingBackground";
 
 
 
@@ -189,18 +190,29 @@ function CreateTrip() {
 
 
   return (
-    <div className="sm:px-10 md:px-32 lg:px-64 xl:px-80 px-6 mt-10">
-      <h2 className="font-bold text-3xl">Tell us your preferences.</h2>
-      <p className="mt-3 text-gray-500 text-xl">Plan your perfect getaway with ease and precision.</p>
-      <p className="mt-3 text-gray-500 text-xl">Just provide basic information.</p>
+    <div className="relative min-h-screen">
+    <MovingBackground />
+    <div className="relative z-10 sm:px-10 md:px-32 lg:px-64 xl:px-80 px-6 py-16">
+      <div className="text-center sm:text-left">
+        <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-white">
+          ✈️ Plan a new trip
+        </span>
+        <h2 className="font-extrabold text-4xl sm:text-5xl mt-5 tracking-tight text-white">
+          Tell us your <span className="text-gradient">preferences</span>
+        </h2>
+        <p className="mt-4 text-white/80 text-lg max-w-2xl">Plan your perfect getaway with ease and precision — just provide a few basic details and let AI do the rest.</p>
+      </div>
       
 
       {/* Destination Selection */}
-      <div className="mt-20 flex flex-col">
-        <h2 className="text-xl my-3 font-medium">What is your destination of choice?</h2>
+      <div className="mt-10 glass-card flex flex-col rounded-2xl p-6">
+        <h2 className="mb-4 flex items-center gap-3 text-lg font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">1</span>
+          What is your destination of choice?
+        </h2>
         <GoMapAutocomplete onSelect={setSelectedDestination} />
         {selectedDestination && (
-          <p className="mt-3 text-green-600">Selected Destination: {selectedDestination}</p>
+          <p className="mt-3 text-green-400">Selected Destination: {selectedDestination}</p>
         )}
         
         {/* Fallback input in case autocomplete doesn't work */}
@@ -213,15 +225,18 @@ function CreateTrip() {
                 setSelectedDestination(e.target.value);
                 handleInputChange("Destination", e.target.value);
               }}
-              className="w-full border-dashed border-2 border-gray-300"
+              className="w-full border-dashed border-2 input-dark"
             />
           </div>
         )}
       </div>
 
       {/* Trip Duration Input */}
-      <div className="mt-10">
-        <h2 className="text-xl my-3 font-medium">How many days are you planning your trip?</h2>
+      <div className="mt-6 glass-card rounded-2xl p-6">
+        <h2 className="mb-4 flex items-center gap-3 text-lg font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">2</span>
+          How many days are you planning your trip?
+        </h2>
         <Input
   placeholder="Enter number of days"
   type="number"
@@ -231,19 +246,23 @@ function CreateTrip() {
     setDays(e.target.value);
     handleInputChange("days", e.target.value);
   }}
+  className="input-dark"
 />
         
       </div>
 
       {/* Budget Selection */}
-      <div className="mt-10 cursor-pointer">
-        <h2 className="text-xl my-3 font-medium">What is your budget?</h2>
-        <div className="grid grid-cols-3 gap-5 mt-5">
+      <div className="mt-6 glass-card rounded-2xl p-6">
+        <h2 className="mb-4 flex items-center gap-3 text-lg font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">3</span>
+          What is your budget?
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
           {SelectBudgetOptions.map((item) => (
             <div
               key={item.id}
-              className={`p-4 border rounded-lg hover:shadow-lg ${
-                selectedBudget === item.id ? "border-blue-500 bg-blue-100" : ""
+              className={`p-5 border rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-orange-300 ${
+                selectedBudget === item.id ? "border-orange-400 bg-orange-500/25 shadow-md" : "border-white/10 hover:bg-white/5"
               }`}
               onClick={() => {
                 setSelectedBudget(item.id);
@@ -251,22 +270,25 @@ function CreateTrip() {
               }}
             >
               <h2 className="text-2xl">{item.icon}</h2>
-              <h2 className="font-semibold">{item.title}</h2>
-              <p className="text-gray-500">{item.desc}</p>
+              <h2 className="font-semibold text-white">{item.title}</h2>
+              <p className="text-white/60 text-sm">{item.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Travelers Selection */}
-      <div className="mt-10 cursor-pointer">
-        <h2 className="text-xl my-3 font-medium">Who do you plan on traveling with?</h2>
-        <div className="grid grid-cols-3 gap-5 mt-5">
+      <div className="mt-6 glass-card rounded-2xl p-6">
+        <h2 className="mb-4 flex items-center gap-3 text-lg font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">4</span>
+          Who do you plan on traveling with?
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
           {SelectTravelesList.map((item) => (
             <div
               key={item.id}
-              className={`p-4 border rounded-lg hover:shadow-lg ${
-                selectedTraveler === item.id ? "border-blue-500 bg-blue-100" : ""
+              className={`p-5 border rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:border-orange-300 ${
+                selectedTraveler === item.id ? "border-orange-400 bg-orange-500/25 shadow-md" : "border-white/10 hover:bg-white/5"
               }`}
               onClick={() => {
                 setSelectedTraveler(item.id);
@@ -274,8 +296,8 @@ function CreateTrip() {
               }}
             >
               <h2 className="text-2xl">{item.icon}</h2>
-              <h2 className="font-semibold">{item.title}</h2>
-              <p className="text-gray-500">{item.desc}</p>
+              <h2 className="font-semibold text-white">{item.title}</h2>
+              <p className="text-white/60 text-sm">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -283,15 +305,17 @@ function CreateTrip() {
 
 
       {/* Submit Button */}
-      <div className="my-10 justify-end flex">
-
-        <Button disabled={loading} onClick={onGenerateTrip}>
-          {loading ? 
-          <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin"  />:
-          'Generate Trip'
-  } 
+      <div className="mt-10 flex flex-col items-center gap-3">
+        <Button disabled={loading} onClick={onGenerateTrip} className="w-full sm:w-auto rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-12 py-6 text-base font-semibold shadow-lg shadow-orange-500/30 transition-transform hover:scale-[1.02] hover:from-orange-600 hover:to-orange-700">
+          {loading ?
+            <span className="flex items-center gap-2">
+              <AiOutlineLoading3Quarters className="h-5 w-5 animate-spin" />
+              Crafting your itinerary…
+            </span> :
+            '✨ Generate Trip'
+          }
         </Button>
-
+        <p className="text-sm text-white/60">Powered by AI · Takes about a minute</p>
       </div>
 
       {/* Auth Dialog */}
@@ -299,19 +323,22 @@ function CreateTrip() {
         <DialogContent>
           <DialogHeader>
             <DialogDescription>
-
-              <img src="/logo.svg" alt="Logo" />
-              <h2 className="font-bold text-lg mt-7">Sign In With Google</h2>
-              <p>Sign in to the app with Google authentication</p>
-              <Button onClick={login} className="w-full mt-5">
-                <FcGoogle className="mr-2" />
-
-                Sign In With Google
-              </Button>
+              <div className="flex flex-col items-center text-center">
+                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 text-xl">
+                  ✈️
+                </span>
+                <h2 className="text-xl font-bold text-white">Sign in to generate your trip</h2>
+                <p className="mt-1.5 text-sm text-white/70">You need to be signed in so we can save your itinerary.</p>
+                <Button onClick={login} className="mt-6 w-full rounded-full bg-white py-6 text-base font-medium text-gray-800 hover:bg-gray-100">
+                  <FcGoogle className="mr-2 text-xl" />
+                  Continue with Google
+                </Button>
+              </div>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
+    </div>
     </div>
   );
 }
