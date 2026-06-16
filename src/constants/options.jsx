@@ -91,4 +91,9 @@ export const SelectBudgetOptions = [
 ];
 
 export const AI_PROMPT =
-  "Generate Travel Plan for Location: {location} ,for {totalDays} Days for {traveler} with a {budget} Budget ,Give me a hotels options list with HotelName ,Hotel address ,Price ,Hotel image url , geocoordinates ,rating , descriptions and suggest itinerary with placename ,Place Details ,Place Image Url ,Geo Coordinates ,tickets Pricing ,rating ,Time Travel each of the location for {totaldays} days with each day plan best time to visit in JSON format";
+  "Generate a detailed travel plan as JSON for the destination: {location}, lasting {totalDays} days, for {traveler}, with a {budget} budget. " +
+  'Return an object with exactly two keys: "hotels" and "itinerary". ' +
+  '"hotels": an array of 4 to 5 real, well-known hotel options suited to the budget. Each hotel must include: hotelName, hotelAddress, price (a nightly price range with currency, e.g. "$80-120 / night"), rating (a number from 1 to 5), description (1-2 sentences), and geoCoordinates (an object with latitude and longitude numbers). ' +
+  '"itinerary": an array containing exactly one entry per day for all {totalDays} days. Each entry must include: day (a number, e.g. 1), theme (a short title for the day, e.g. "Historic City Centre"), and plan (an array of 3 to 4 places to visit that day). ' +
+  "Each place in plan must include: placeName (a real, well-known attraction so it can be matched to a photo), placeDetails (a 2-3 sentence description of what it is and why it is worth visiting), ticketPricing (entry cost with currency, or \"Free\"), rating (a number from 1 to 5), timeToSpend (e.g. \"2-3 hours\"), bestTimeToVisit (e.g. \"Morning\"), and geoCoordinates (an object with latitude and longitude numbers). " +
+  "Use only real, accurate place names. Respond with valid JSON only, no extra commentary.";

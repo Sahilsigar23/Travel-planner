@@ -139,11 +139,11 @@ function CreateTrip() {
   
     try {
       const FINAL_PROMPT = AI_PROMPT
-        .replace("{location}", formData.Destination)
-        .replace("{totalDays}", formData.days)
-        .replace("{traveler}", formData.travelers)
-        .replace("{budget}", formData.budget)
-        .replace("{totaldays}", formData.days);
+        .replaceAll("{location}", formData.Destination)
+        .replaceAll("{totalDays}", String(formData.days))
+        .replaceAll("{totaldays}", String(formData.days))
+        .replaceAll("{traveler}", formData.travelers)
+        .replaceAll("{budget}", formData.budget);
   
       console.log("FINAL_PROMPT:", FINAL_PROMPT);
   
@@ -216,21 +216,6 @@ function CreateTrip() {
         <GoMapAutocomplete onSelect={setSelectedDestination} />
         {selectedDestination && (
           <p className="mt-3 text-green-400">Selected Destination: {selectedDestination}</p>
-        )}
-        
-        {/* Fallback input in case autocomplete doesn't work */}
-        {!selectedDestination && (
-          <div className="mt-3">
-            <Input
-              placeholder="Or type destination directly (e.g., Tokyo, Japan)"
-              value={selectedDestination}
-              onChange={(e) => {
-                setSelectedDestination(e.target.value);
-                handleInputChange("Destination", e.target.value);
-              }}
-              className="w-full border-dashed border-2 input-dark"
-            />
-          </div>
         )}
       </div>
 
@@ -325,19 +310,21 @@ function CreateTrip() {
       <Dialog open={openDailog} onOpenChange={(isOpen) => setOpenDailog(isOpen)}>
         <DialogContent>
           <DialogHeader>
-            <DialogDescription>
-              <div className="flex flex-col items-center text-center">
-                <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 text-xl">
-                  ✈️
-                </span>
-                <h2 className="text-xl font-bold text-white">Sign in to generate your trip</h2>
-                <p className="mt-1.5 text-sm text-white/70">You need to be signed in so we can save your itinerary.</p>
-                <Button onClick={login} className="mt-6 w-full rounded-full bg-white py-6 text-base font-medium text-gray-800 hover:bg-gray-100">
-                  <FcGoogle className="mr-2 text-xl" />
-                  Continue with Google
-                </Button>
-              </div>
+            <DialogTitle className="sr-only">Sign in to generate your trip</DialogTitle>
+            <DialogDescription className="sr-only">
+              Sign in with Google so we can save your generated itinerary.
             </DialogDescription>
+            <div className="flex flex-col items-center text-center">
+              <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 text-xl">
+                ✈️
+              </span>
+              <h2 className="text-xl font-bold text-white">Sign in to generate your trip</h2>
+              <p className="mt-1.5 text-sm text-white/70">You need to be signed in so we can save your itinerary.</p>
+              <Button onClick={login} className="mt-6 w-full rounded-full bg-white py-6 text-base font-medium text-gray-800 hover:bg-gray-100">
+                <FcGoogle className="mr-2 text-xl" />
+                Continue with Google
+              </Button>
+            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>

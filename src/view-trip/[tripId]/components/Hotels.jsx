@@ -1,70 +1,68 @@
 import React, { useEffect, useState } from "react";
-import { GetPlacesDetails } from "@/service/GlobalApi";
-import HotelCardItems from './HotelCardItems';
+import HotelCardItems from "./HotelCardItems";
 
 function Hotels({ trip }) {
   const [hotels, setHotels] = useState([]);
 
   useEffect(() => {
-    if (trip?.userSelction?.Destination) {
-      fetchHotels(trip.userSelction.Destination);
+    if (!trip) return;
+
+    // Hotels now come straight from the AI-generated trip data — no paid Maps API.
+    const aiHotels =
+      trip?.tripData?.hotels ||
+      trip?.tripData?.hotelOptions ||
+      trip?.tripData?.hotel_options;
+
+    if (Array.isArray(aiHotels) && aiHotels.length > 0) {
+      setHotels(normalize(aiHotels));
+    } else if (trip?.userSelction?.Destination) {
+      setHotels(getFallbackHotels(trip.userSelction.Destination));
     }
   }, [trip]);
 
-  // Fallback hotel data when API fails
+  // Tolerate whatever key-casing the AI used and produce a consistent shape.
+  const normalize = (list) =>
+    list.map((h) => ({
+      hotelName: h.hotelName || h.name || "Hotel",
+      hotelAddress: h.hotelAddress || h.address || "",
+      price: h.price || h.pricePerNight || h.priceRange || "N/A",
+      rating: h.rating ?? "N/A",
+      description: h.description || h.desc || "",
+    }));
+
+  // Used only if the AI returned no hotels (e.g. older saved trips).
   const getFallbackHotels = (destination) => [
     {
       hotelName: `${destination} Central Hotel`,
       hotelAddress: `Downtown ${destination}`,
-      hotelImageUrl: `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop`,
-      pricePerNight: "$80-120",
+      price: "$80-120 / night",
       rating: 4.2,
+      description: "Comfortable, well-located stay close to the main sights.",
     },
     {
       hotelName: `Budget Inn ${destination}`,
       hotelAddress: `Near City Center, ${destination}`,
-      hotelImageUrl: `https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=300&fit=crop`,
-      pricePerNight: "$50-80",
+      price: "$50-80 / night",
       rating: 3.8,
+      description: "Affordable rooms with the essentials for budget travelers.",
     },
     {
       hotelName: `Luxury Resort ${destination}`,
       hotelAddress: `Premium Area, ${destination}`,
-      hotelImageUrl: `https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop`,
-      pricePerNight: "$150-250",
+      price: "$150-250 / night",
       rating: 4.5,
+      description: "Upscale amenities and premium service for a relaxing trip.",
     },
     {
       hotelName: `Business Hotel ${destination}`,
       hotelAddress: `Business District, ${destination}`,
-      hotelImageUrl: `https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&h=300&fit=crop`,
-      pricePerNight: "$90-140",
+      price: "$90-140 / night",
       rating: 4.1,
-    }
+      description: "Modern rooms ideal for work and convenient transport links.",
+    },
   ];
 
-  const fetchHotels = async (destination) => {
-    try {
-      const result = await GetPlacesDetails({ textQuery: `hotels in ${destination}` });
-
-      if (result?.results && result.results.length > 0) {
-        const hotelOptions = result.results.map((hotel) => ({
-          hotelName: hotel.name,
-          hotelAddress: hotel.formatted_address,
-          hotelImageUrl: hotel.photos?.[0]?.photo_reference
-            ? `https://maps.gomaps.pro/maps/api/place/photo?maxwidth=400&photo_reference=${hotel.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_PLACE_API_KEY}`
-            : `https://images.unsplash.com/photo-${['1566073771259-6a8506099945', '1551882547-ff40c63fe5fa', '1582719478250-c89cae4dc85b', '1564501049412-61c2a3083791', '1571896349842-33c89424de2d'][Math.floor(Math.random() * 5)]}?w=400&h=300&fit=crop`,
-          pricePerNight: hotel.price_level ? `$${hotel.price_level * 50}` : "N/A",
-          rating: hotel.rating || "No rating",
-        }));
-        setHotels(hotelOptions);
-      } else {
-        setHotels(getFallbackHotels(destination));
-      }
-    } catch (error) {
-      setHotels(getFallbackHotels(destination));
-    }
-  };
+  if (!hotels.length) return null;
 
   return (
     <div className="mt-12 mb-8">

@@ -1,55 +1,45 @@
-import React from 'react';
-import PlaceCardItems from './PlaceCardItems';
+import React from "react";
+import PlaceCardItems from "./PlaceCardItems";
 
-const PlacesToVisit = ({ trip }) => {
-  console.log("PlacesToVisit component trip data:", trip); // Debugging log
-  console.log("Places to visit:", trip?.tripData?.itinerary); // Debugging log
-  console.log("Day plan:", trip?.tripData?.day_plan); // Check alternative structure
+// Normalize the AI itinerary into a consistent [{ day, theme, plan[] }] list.
+// Handles the new array form as well as legacy object/keyed forms so previously
+// saved trips still render correctly.
+function normalizeItinerary(trip) {
+  const data = trip?.tripData?.itinerary || trip?.tripData?.day_plan?.itinerary;
 
-  // Try multiple data structure formats
-  let placesData = {};
-  
-  if (trip?.tripData?.itinerary) {
-    placesData = trip.tripData.itinerary;
-  } else if (trip?.tripData?.day_plan?.itinerary) {
-    // Handle single day structure from AI
-    placesData = { "Day 1": { plan: trip.tripData.day_plan.itinerary } };
-  } else {
-    // Fallback places data for demonstration
-    const destination = trip?.userSelction?.Destination || "Tokyo, Japan";
-    placesData = {
-      "Day 1": {
-        plan: [
-          {
-            placeName: `${destination} Main Attraction`,
-            placeDetails: "Must-visit iconic landmark with beautiful views and rich history.",
-            timeToSpend: "2-3 hours",
-            ticketPricing: "Free to $20",
-            rating: 4.5,
-            bestTimeToVisit: "Morning"
-          },
-          {
-            placeName: `${destination} Cultural Site`,
-            placeDetails: "Experience local culture and traditions at this popular destination.",
-            timeToSpend: "1-2 hours", 
-            ticketPricing: "Free to $15",
-            rating: 4.3,
-            bestTimeToVisit: "Afternoon"
-          },
-          {
-            placeName: `${destination} Shopping District`,
-            placeDetails: "Vibrant shopping area with local shops, restaurants, and entertainment.",
-            timeToSpend: "2-4 hours",
-            ticketPricing: "Free",
-            rating: 4.2,
-            bestTimeToVisit: "Evening"
-          }
-        ]
-      }
-    };
+  // New (preferred) form: an array of day objects.
+  if (Array.isArray(data)) {
+    return data
+      .map((d, i) => ({
+        day: d.day ?? i + 1,
+        theme: d.theme || d.title || "",
+        plan: d.plan || d.places || d.itinerary || [],
+      }))
+      .filter((d) => Array.isArray(d.plan) && d.plan.length > 0);
   }
 
-  const sortedDays = Object.keys(placesData).sort();
+  // Legacy form: an object keyed by "Day 1", "Day 2", ...
+  if (data && typeof data === "object") {
+    return Object.keys(data)
+      .sort()
+      .map((key, i) => {
+        const value = data[key];
+        const plan = Array.isArray(value)
+          ? value
+          : value?.plan || value?.itinerary || value?.places || [];
+        const theme = value && typeof value === "object" ? value.theme || "" : "";
+        return { day: i + 1, theme: theme || key, plan };
+      })
+      .filter((d) => Array.isArray(d.plan) && d.plan.length > 0);
+  }
+
+  return [];
+}
+
+const PlacesToVisit = ({ trip }) => {
+  const days = normalizeItinerary(trip);
+
+  if (!days.length) return null;
 
   return (
     <div className="mt-12 mb-8">
@@ -57,19 +47,19 @@ const PlacesToVisit = ({ trip }) => {
         🗺️ Places To Visit
       </h2>
       <div className="space-y-6">
-        {sortedDays.map((dayKey, index) => (
-          <div
-            key={index}
-            className="glass-card rounded-2xl p-6"
-          >
-            <h2 className="mb-4 inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">
-              {dayKey}
-            </h2>
+        {days.map((dayItem, index) => (
+          <div key={index} className="glass-card rounded-2xl p-6">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">
+                Day {dayItem.day}
+              </span>
+              {dayItem.theme && (
+                <span className="text-sm font-medium text-white/80">{dayItem.theme}</span>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {(placesData[dayKey]?.plan || placesData[dayKey]?.itinerary || []).map((planItem, planIndex) => (
-                <div key={planIndex}>
-                  <PlaceCardItems place={planItem} />
-                </div>
+              {dayItem.plan.map((planItem, planIndex) => (
+                <PlaceCardItems key={planIndex} place={planItem} />
               ))}
             </div>
           </div>

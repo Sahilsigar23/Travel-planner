@@ -1,67 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { GetPlacesDetails, PHOTO_REF_URL } from "@/service/GlobalApi";
+import { getFallbackImage } from "@/service/GlobalApi";
 
 function HotelCardItems({ hotel, index }) {
-  const [photoUrl, setPhotoUrl] = useState(hotel.hotelImageUrl);
+  // Curated, billing-free hotel image (cycles so each card looks distinct).
+  const photoUrl = getFallbackImage(index, "hotel");
 
-  useEffect(() => {
-    if (hotel?.hotelName) {
-      GetPlacePhoto();
-    }
-  }, [hotel]);
-
-  const GetPlacePhoto = async () => {
-    try {
-      const result = await GetPlacesDetails({ textQuery: hotel.hotelName });
-      console.log("API Response:", result); // Debugging log
-
-      if (result?.results?.[0]?.photos?.[3]?.photo_reference) {
-        const photoReference = result.results[0].photos[3].photo_reference;
-        console.log("Photo Reference:", photoReference);
-
-        setPhotoUrl(PHOTO_REF_URL(photoReference));
-      } else {
-        console.warn("No photos available for:", hotel.hotelName);
-        setPhotoUrl(hotel.hotelImageUrl);
-      }
-    } catch (error) {
-      console.error("Error fetching place details:", error);
-      setPhotoUrl(hotel.hotelImageUrl);
-    }
-  };
+  // Plain Google Maps search link — no API key / billing required.
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${hotel.hotelName} ${hotel.hotelAddress}`.trim()
+  )}`;
 
   return (
-    <div className="glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
-      <Link
-        key={`${hotel.hotelName}-${index}`}
-        to={`https://maps.gomaps.pro/maps/search/?api=1&query=${encodeURIComponent(hotel.hotelName)},${encodeURIComponent(hotel.hotelAddress)}`}
-        target="_blank"
-      >
+    <div className="glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
+      <Link to={mapsUrl} target="_blank" rel="noopener noreferrer">
         <img
-          src={photoUrl || `https://images.unsplash.com/photo-${['1566073771259-6a8506099945', '1551882547-ff40c63fe5fa', '1582719478250-c89cae4dc85b', '1564501049412-61c2a3083791', '1571896349842-33c89424de2d'][index % 5]}?w=400&h=300&fit=crop`}
+          src={photoUrl}
           alt={hotel.hotelName}
           className="w-full h-48 object-cover"
+          loading="lazy"
           onError={(e) => {
-            // Fallback chain: try different hotel images from CDN
-            if (e.target.src.includes('photo-1566073771259')) {
-              e.target.src = 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=300&fit=crop';
-            } else if (e.target.src.includes('photo-1551882547')) {
-              e.target.src = 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&h=300&fit=crop';
-            } else if (e.target.src.includes('photo-1582719478')) {
-              e.target.src = 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&h=300&fit=crop';
-            } else {
-              e.target.src = 'https://via.placeholder.com/400x300/f0f0f0/666666?text=Hotel+Image';
-            }
+            e.target.onerror = null;
+            e.target.src =
+              "https://via.placeholder.com/400x300/1f2937/9ca3af?text=Hotel";
           }}
         />
-        <div className="p-4">
-          <h2 className="font-semibold text-lg text-white">{hotel.hotelName}</h2>
-          <p className="text-sm text-white/70 mt-1">📍 {hotel.hotelAddress}</p>
-          <p className="text-sm text-green-400 mt-1">💰 {hotel.pricePerNight}</p>
-          <p className="text-sm text-yellow-400 mt-1">⭐ {hotel.rating}</p>
-        </div>
       </Link>
+      <div className="p-4 flex flex-col gap-1 flex-1">
+        <h2 className="font-semibold text-lg text-white">{hotel.hotelName}</h2>
+        {hotel.hotelAddress && (
+          <p className="text-sm text-white/70">📍 {hotel.hotelAddress}</p>
+        )}
+        {hotel.description && (
+          <p className="text-sm text-white/60 mt-1 line-clamp-2">{hotel.description}</p>
+        )}
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-sm text-green-400">💰 {hotel.price}</span>
+          <span className="text-sm text-yellow-400">⭐ {hotel.rating}</span>
+        </div>
+        <Link
+          to={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 text-sm font-medium text-orange-400 transition-transform hover:translate-x-1"
+        >
+          View on map →
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,66 +1,89 @@
-import { GetPlacesDetails, PHOTO_REF_URL } from '@/service/GlobalApi';
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getPlaceInfo, getFallbackImage } from "@/service/GlobalApi";
 
 function PlaceCardItems({ place }) {
-  const [photoUrl, setPhotoUrl] = useState(place.placeImageUrl);
+  const [photoUrl, setPhotoUrl] = useState(getFallbackImage(place?.placeName));
+  const [wikiDesc, setWikiDesc] = useState("");
 
   useEffect(() => {
-    if (place) {
-      GetPlacePhoto();
+    let active = true;
+    if (place?.placeName) {
+      // Real photo + description from Wikipedia (free, no billing).
+      getPlaceInfo(place.placeName).then((info) => {
+        if (!active || !info) return;
+        if (info.image) setPhotoUrl(info.image);
+        if (info.description) setWikiDesc(info.description);
+      });
     }
-  }, [place]);
+    return () => {
+      active = false;
+    };
+  }, [place?.placeName]);
 
-  const GetPlacePhoto = async () => {
-    if (!place?.placeName) return;
-    const data = { textQuery: place.placeName };
+  // Prefer the AI's tailored details; enrich with Wikipedia when AI text is thin.
+  const description =
+    place?.placeDetails && place.placeDetails.length > 20
+      ? place.placeDetails
+      : wikiDesc || place?.placeDetails || "A popular spot worth visiting.";
 
-    try {
-      const result = await GetPlacesDetails(data);
-      console.log("API Response:", result); // Debugging log
-
-      if (result?.results && result.results.length > 0 && result.results[0].photos?.length > 0) {
-        const photoReference = result.results[0].photos[0].photo_reference; // Ensure it exists
-        console.log("Photo Reference:", photoReference);
-
-        const photoUrl = PHOTO_REF_URL(photoReference); // Pass reference dynamically
-        setPhotoUrl(photoUrl);
-      } else {
-        console.warn("No photos available for this location.");
-        setPhotoUrl(null); // Set a fallback image if needed
-      }
-    } catch (error) {
-      console.error("Error fetching place details:", error);
-      setPhotoUrl(null);
-    }
-  };
+  const mapsUrl =
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(place?.placeName || "place");
 
   return (
-    <div className="glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
-      <Link to={'https://www.google.com/maps/search/?api=1&query=' + (place?.placeName || 'place')} target='_blank'>
+    <div className="glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
+      <Link to={mapsUrl} target="_blank" rel="noopener noreferrer" className="block">
         <img
-          src={photoUrl || `https://images.unsplash.com/photo-${['1501594907352-04cda38ebc29', '1539037116277-f6e0a434a9af', '1522199755839-a2bacb67c546', '1513581566782-56663dddc04a', '1506905925346-21bda4d32df4'][Math.abs((place?.placeName || 'place').length) % 5]}?w=400&h=300&fit=crop`}
+          src={photoUrl}
           className="w-full h-48 object-cover"
-          alt={place?.placeName || 'Place'}
+          alt={place?.placeName || "Place"}
+          loading="lazy"
           onError={(e) => {
-            // Fallback chain: try different place images from CDN
-            if (e.target.src.includes('photo-1501594907352')) {
-              e.target.src = 'https://images.unsplash.com/photo-1539037116277-f6e0a434a9af?w=400&h=300&fit=crop';
-            } else if (e.target.src.includes('photo-1539037116277')) {
-              e.target.src = 'https://images.unsplash.com/photo-1522199755839-a2bacb67c546?w=400&h=300&fit=crop';
-            } else if (e.target.src.includes('photo-1522199755839')) {
-              e.target.src = 'https://images.unsplash.com/photo-1513581566782-56663dddc04a?w=400&h=300&fit=crop';
-            } else {
-              e.target.src = 'https://via.placeholder.com/400x300/e0e0e0/777777?text=Travel+Destination';
-            }
+            e.target.onerror = null;
+            e.target.src = getFallbackImage(place?.placeName);
           }}
         />
-        <div className="p-4">
-          <h2 className="font-semibold text-lg text-white">{place?.placeName || 'Unknown Place'}</h2>
-          <p className="text-sm text-white/70 mt-1">{place?.placeDetails || 'No details available'}</p>
-          <p className="text-sm text-sky-400 mt-1">🕙 {place?.timeToSpend || 'Time not specified'}</p>
-        </div>
       </Link>
+      <div className="p-4 flex flex-col gap-2 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="font-semibold text-lg text-white">
+            {place?.placeName || "Unknown Place"}
+          </h2>
+          {place?.rating != null && place.rating !== "" && (
+            <span className="shrink-0 text-sm text-yellow-400">⭐ {place.rating}</span>
+          )}
+        </div>
+
+        <p className="text-sm text-white/70 line-clamp-3">{description}</p>
+
+        <div className="mt-auto flex flex-wrap gap-2 pt-2">
+          {place?.timeToSpend && (
+            <span className="rounded-full bg-sky-500/15 px-2.5 py-1 text-xs font-medium text-sky-300">
+              🕙 {place.timeToSpend}
+            </span>
+          )}
+          {place?.ticketPricing && (
+            <span className="rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-300">
+              🎟️ {place.ticketPricing}
+            </span>
+          )}
+          {place?.bestTimeToVisit && (
+            <span className="rounded-full bg-purple-500/15 px-2.5 py-1 text-xs font-medium text-purple-300">
+              ☀️ {place.bestTimeToVisit}
+            </span>
+          )}
+        </div>
+
+        <Link
+          to={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 text-sm font-medium text-orange-400 transition-transform hover:translate-x-1"
+        >
+          View on map →
+        </Link>
+      </div>
     </div>
   );
 }

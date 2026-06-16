@@ -1,9 +1,80 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 const apiKey = import.meta.env.VITE_GOOGLE_GEMINI_AI_API_KEY;
 if (!apiKey) throw new Error("API key missing");
 
 const genAI = new GoogleGenerativeAI(apiKey);
+
+// Force the model to return well-structured JSON so the UI can rely on a stable
+// shape (hotels[] + itinerary[]). This fixes the previously inconsistent output.
+const geoSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    latitude: { type: SchemaType.NUMBER },
+    longitude: { type: SchemaType.NUMBER },
+  },
+};
+
+const TRIP_SCHEMA = {
+  type: SchemaType.OBJECT,
+  properties: {
+    hotels: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          hotelName: { type: SchemaType.STRING },
+          hotelAddress: { type: SchemaType.STRING },
+          price: { type: SchemaType.STRING },
+          rating: { type: SchemaType.NUMBER },
+          description: { type: SchemaType.STRING },
+          geoCoordinates: geoSchema,
+        },
+        required: ["hotelName", "hotelAddress", "price", "rating", "description"],
+      },
+    },
+    itinerary: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          day: { type: SchemaType.NUMBER },
+          theme: { type: SchemaType.STRING },
+          plan: {
+            type: SchemaType.ARRAY,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                placeName: { type: SchemaType.STRING },
+                placeDetails: { type: SchemaType.STRING },
+                ticketPricing: { type: SchemaType.STRING },
+                rating: { type: SchemaType.NUMBER },
+                timeToSpend: { type: SchemaType.STRING },
+                bestTimeToVisit: { type: SchemaType.STRING },
+                geoCoordinates: geoSchema,
+              },
+              required: [
+                "placeName",
+                "placeDetails",
+                "ticketPricing",
+                "timeToSpend",
+                "bestTimeToVisit",
+              ],
+            },
+          },
+        },
+        required: ["day", "theme", "plan"],
+      },
+    },
+  },
+  required: ["hotels", "itinerary"],
+};
+
+const GENERATION_CONFIG = {
+  responseMimeType: "application/json",
+  responseSchema: TRIP_SCHEMA,
+  temperature: 1,
+};
 
 // Tried in order. If one model is overloaded (503) or rate-limited (429),
 // we retry it a few times, then fall back to the next one.
@@ -39,7 +110,10 @@ async function generateWithRetry(message) {
   let lastError;
 
   for (const modelName of MODEL_FALLBACKS) {
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({
+      model: modelName,
+      generationConfig: GENERATION_CONFIG,
+    });
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS_PER_MODEL; attempt++) {
       try {
