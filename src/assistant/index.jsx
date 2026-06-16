@@ -24,13 +24,15 @@ function Assistant() {
         </div>
 
         <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-          <div className="lg:row-span-2">
+          {/* Left column: short-by-default Weather paired with the taller Emergency */}
+          <div className="flex flex-col gap-6">
             <WeatherCard />
-          </div>
-          <CurrencyCard />
-          <TrafficCard />
-          <div className="lg:col-span-2">
             <EmergencyCard />
+          </div>
+          {/* Right column */}
+          <div className="flex flex-col gap-6">
+            <CurrencyCard />
+            <TrafficCard />
           </div>
         </div>
       </div>
