@@ -72,6 +72,15 @@ function Header() {
           </span>
         </a>
 
+        {/* Primary nav */}
+        <nav className="hidden sm:flex items-center gap-1">
+          <a href="/assistant">
+            <Button variant="ghost" className="rounded-full font-medium text-white/90 hover:bg-white/10 hover:text-white">
+              ⚡ Assistant
+            </Button>
+          </a>
+        </nav>
+
         {/* Actions */}
         <div>
           {userProfile ? (
