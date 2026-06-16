@@ -2,9 +2,10 @@ import axios from "axios";
 
 // ---------------------------------------------------------------------------
 // Real-time travel data — free, no API key, no billing.
-//   • Open-Meteo            → city geocoding + weather forecast
-//   • open.er-api.com       → live currency exchange rates (166 currencies)
-// Both support CORS from the browser. Per the assistant spec, we only ever
+//   • Open-Meteo                    → city geocoding + weather forecast
+//   • open.er-api.com / Frankfurter → live currency exchange rates (with fallback)
+//   • OSRM                          → road routing / travel time
+// All support CORS from the browser. Per the assistant spec, we only ever
 // return live API data and surface errors instead of fabricating values.
 // ---------------------------------------------------------------------------
 
@@ -143,4 +144,53 @@ export const getRates = async (base = "USD") => {
   });
   if (!data?.rates) throw new Error("Exchange rate service returned no data");
   return { rates: { ...data.rates, [base]: 1 }, updated: data.date };
+};
+
+// --- Routing / travel time (OSRM, free, no key) -----------------------------
+// The public OSRM server only routes the driving network, so driving time is
+// real/road-routed while walking & cycling are clearly-labeled estimates from
+// the routed distance. No free no-key source provides live traffic.
+const OSRM_URL = "https://router.project-osrm.org/route/v1/driving";
+
+export const TRAVEL_MODES = [
+  { key: "driving", label: "Driving", icon: "🚗", speed: null },
+  { key: "cycling", label: "Cycling", icon: "🚴", speed: 15 },
+  { key: "walking", label: "Walking", icon: "🚶", speed: 5 },
+];
+
+export const getRoute = async (from, to) => {
+  const coords = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;
+  const { data } = await axios.get(`${OSRM_URL}/${coords}`, {
+    params: { overview: false, alternatives: true },
+    timeout: 12000,
+  });
+  if (data?.code !== "Ok" || !data.routes?.length) {
+    throw new Error("No road route found between these places.");
+  }
+  const best = data.routes[0];
+  return {
+    distanceKm: best.distance / 1000,
+    drivingSec: best.duration,
+    alternatives: Math.max(0, data.routes.length - 1),
+  };
+};
+
+// Estimated duration (seconds) for a mode given the routed distance.
+export const modeDurationSec = (mode, distanceKm, drivingSec) =>
+  mode.speed ? (distanceKm / mode.speed) * 3600 : drivingSec;
+
+// Human-friendly duration: "2h 15m" / "45 min".
+export const formatDuration = (sec) => {
+  const mins = Math.round(sec / 60);
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+};
+
+// Suggest the most practical mode based on distance.
+export const recommendMode = (distanceKm) => {
+  if (distanceKm <= 2) return "walking";
+  if (distanceKm <= 8) return "cycling";
+  return "driving";
 };

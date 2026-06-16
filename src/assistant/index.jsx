@@ -3,6 +3,7 @@ import MovingBackground from "@/components/custom/MovingBackground";
 import WeatherCard from "./components/WeatherCard";
 import CurrencyCard from "./components/CurrencyCard";
 import EmergencyCard from "./components/EmergencyCard";
+import TrafficCard from "./components/TrafficCard";
 
 function Assistant() {
   return (
@@ -22,12 +23,15 @@ function Assistant() {
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <div className="lg:row-span-2">
             <WeatherCard />
           </div>
           <CurrencyCard />
-          <EmergencyCard />
+          <TrafficCard />
+          <div className="lg:col-span-2">
+            <EmergencyCard />
+          </div>
         </div>
       </div>
     </div>
