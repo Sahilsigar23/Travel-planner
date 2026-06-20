@@ -226,3 +226,98 @@
   .animate-fadeUp, .text-gradient { animation: none !important; }
   .animate-fadeUp { opacity: 1; }
 }
+
+/* ============================================================
+   Leaflet map — blend the controls/popups with the dark UI
+   ============================================================ */
+
+/* Our custom SVG pins are DivIcons; strip Leaflet's default white box. */
+.trip-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Dark popups to match the glass theme. */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: rgba(17, 24, 39, 0.95) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+.leaflet-popup-content a { color: #fb923c !important; }
+.leaflet-container a.leaflet-popup-close-button { color: #cbd5e1 !important; }
+
+/* Zoom controls + attribution legible on dark tiles. */
+.leaflet-bar a {
+  background: rgba(17, 24, 39, 0.9) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.leaflet-bar a:hover { background: rgba(30, 41, 59, 0.95) !important; }
+.leaflet-control-attribution {
+  background: rgba(17, 24, 39, 0.75) !important;
+  color: #cbd5e1 !important;
+}
+.leaflet-control-attribution a { color: #93c5fd !important; }
+
+/* ============================================================
+   Print / "Save as PDF" — render the itinerary as a clean,
+   light, ink-friendly document (the screen UI is dark glass).
+   ============================================================ */
+@media print {
+  /* Hide app chrome and anything explicitly marked no-print. */
+  header,
+  .no-print,
+  .leaflet-container {
+    display: none !important;
+  }
+
+  /* Light, legible page. */
+  html, body {
+    background: #ffffff !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 8mm;
+    color: #111827 !important;
+  }
+
+  /* Flatten glass cards into plain bordered blocks. */
+  .print-area .glass,
+  .print-area .glass-card,
+  .print-area .glass-overlay {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: #111827 !important;
+  }
+
+  /* Force all text dark for legibility on white paper. */
+  .print-area [class*="text-white"],
+  .print-area .text-gradient {
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+  }
+
+  /* Keep each card and day block intact across page breaks. */
+  .print-area .glass-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

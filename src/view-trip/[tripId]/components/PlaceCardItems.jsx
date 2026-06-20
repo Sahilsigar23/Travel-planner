@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getPlaceInfo, getFallbackImage } from "@/service/GlobalApi";
+import { formatDuration } from "@/service/RealtimeApi";
 
-function PlaceCardItems({ place }) {
+function PlaceCardItems({ place, travelFromPrev, accentColor }) {
   const [photoUrl, setPhotoUrl] = useState(getFallbackImage(place?.placeName));
   const [wikiDesc, setWikiDesc] = useState("");
 
@@ -46,6 +47,14 @@ function PlaceCardItems({ place }) {
         />
       </Link>
       <div className="p-4 flex flex-col gap-2 flex-1">
+        {travelFromPrev && (
+          <span
+            className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80"
+            style={accentColor ? { color: accentColor } : undefined}
+          >
+            🚗 {formatDuration(travelFromPrev.durationSec)} · {travelFromPrev.distanceKm.toFixed(1)} km from previous stop
+          </span>
+        )}
         <div className="flex items-start justify-between gap-2">
           <h2 className="font-semibold text-lg text-white">
             {place?.placeName || "Unknown Place"}

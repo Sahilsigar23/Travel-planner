@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { geocodeCity, getWeather, weatherCodeInfo, weatherAdvice } from "@/service/RealtimeApi";
@@ -6,27 +6,29 @@ import { geocodeCity, getWeather, weatherCodeInfo, weatherAdvice } from "@/servi
 const dayName = (iso) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" });
 
-function WeatherCard() {
-  const [query, setQuery] = useState("");
+function WeatherCard({ initialCity = "" }) {
+  const [query, setQuery] = useState(initialCity);
   const [matches, setMatches] = useState([]);
   const [place, setPlace] = useState(null);
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const search = async (e) => {
-    e?.preventDefault();
-    if (query.trim().length < 2) return;
+  // `autoPick` skips the multi-match picker and loads the top result — used for
+  // deep links from a trip, where the user already chose their destination.
+  const runSearch = async (term, { autoPick = false } = {}) => {
+    const value = (term || "").trim();
+    if (value.length < 2) return;
     setLoading(true);
     setError("");
     setMatches([]);
     setWeather(null);
     setPlace(null);
     try {
-      const results = await geocodeCity(query);
+      const results = await geocodeCity(value);
       if (!results.length) {
-        setError(`No city found for "${query}". Try a nearby city name.`);
-      } else if (results.length === 1) {
+        setError(`No city found for "${value}". Try a nearby city name.`);
+      } else if (results.length === 1 || autoPick) {
         await loadWeather(results[0]);
       } else {
         setMatches(results);
@@ -37,6 +39,21 @@ function WeatherCard() {
       setLoading(false);
     }
   };
+
+  const search = (e) => {
+    e?.preventDefault();
+    runSearch(query);
+  };
+
+  // Auto-load when arriving from a trip's "Check weather" deep link.
+  useEffect(() => {
+    const city = initialCity.split(",")[0].trim();
+    if (city.length >= 2) {
+      setQuery(city);
+      runSearch(city, { autoPick: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCity]);
 
   const loadWeather = async (selected) => {
     setMatches([]);

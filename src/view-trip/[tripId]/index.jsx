@@ -7,6 +7,9 @@ import InfoSection from './components/InfoSection';
 import Hotels from './components/Hotels';
 import PlacesToVisit from './components/PlacesToVisit';
 import Footer from './components/Footer';
+import TripMap from './components/TripMap';
+import TripWeather from './components/TripWeather';
+import TripActions from './components/TripActions';
 import MovingBackground from '@/components/custom/MovingBackground';
 
 function Viewtrip() {
@@ -35,9 +38,18 @@ function Viewtrip() {
   return (
     <div className='relative min-h-screen'>
       <MovingBackground />
-      <div className='relative z-10 mx-auto max-w-6xl px-5 py-10 md:px-10'>
+      <div className='print-area relative z-10 mx-auto max-w-6xl px-5 py-10 md:px-10'>
         {/* Information section */}
         <InfoSection trip={trip} />
+
+        {/* Share / export actions */}
+        <TripActions trip={trip} />
+
+        {/* Interactive map of hotels + daily stops */}
+        <TripMap trip={trip} />
+
+        {/* Live weather for the destination */}
+        <TripWeather destination={trip?.userSelction?.Destination} />
 
         {/* Recommended Hotels */}
         <Hotels trip={trip} />
