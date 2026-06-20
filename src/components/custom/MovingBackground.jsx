@@ -30,7 +30,7 @@ export default function MovingBackground({ interval = 6000 }) {
   }, [interval]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0">
+    <div className="no-print pointer-events-none fixed inset-0 z-0">
       {backgroundImages.length > 0 ? (
         backgroundImages.map((src, i) => (
           <div

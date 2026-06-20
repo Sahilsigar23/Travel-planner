@@ -76,8 +76,17 @@ function MyTrips() {
         </div>
       ) : userTrips.length > 0 ? (
         <div className='mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {userTrips.map((trip, index) => (
-            <UserTripCardItem trip={trip} key={index} />
+          {userTrips.map((trip) => (
+            <UserTripCardItem
+              trip={trip}
+              key={trip.id}
+              onDeleted={(id) => setUserTrips((prev) => prev.filter((t) => t.id !== id))}
+              onRenamed={(id, name) =>
+                setUserTrips((prev) =>
+                  prev.map((t) => (t.id === id ? { ...t, customName: name } : t))
+                )
+              }
+            />
           ))}
         </div>
       ) : (

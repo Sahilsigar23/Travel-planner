@@ -158,6 +158,25 @@ export const TRAVEL_MODES = [
   { key: "walking", label: "Walking", icon: "🚶", speed: 5 },
 ];
 
+// Driving legs along an ordered list of points, in ONE request. OSRM returns a
+// `legs` array (one entry between each consecutive pair), so a whole day's
+// inter-stop travel times cost a single call. Points: [{ latitude, longitude }].
+export const getRouteLegs = async (points) => {
+  if (!Array.isArray(points) || points.length < 2) return [];
+  const coords = points.map((p) => `${p.longitude},${p.latitude}`).join(";");
+  const { data } = await axios.get(`${OSRM_URL}/${coords}`, {
+    params: { overview: false },
+    timeout: 12000,
+  });
+  if (data?.code !== "Ok" || !data.routes?.length) {
+    throw new Error("No road route found between these stops.");
+  }
+  return (data.routes[0].legs || []).map((leg) => ({
+    distanceKm: leg.distance / 1000,
+    durationSec: leg.duration,
+  }));
+};
+
 export const getRoute = async (from, to) => {
   const coords = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;
   const { data } = await axios.get(`${OSRM_URL}/${coords}`, {

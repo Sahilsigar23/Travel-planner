@@ -1,4 +1,5 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import MovingBackground from "@/components/custom/MovingBackground";
 import WeatherCard from "./components/WeatherCard";
 import CurrencyCard from "./components/CurrencyCard";
@@ -6,6 +7,10 @@ import EmergencyCard from "./components/EmergencyCard";
 import TrafficCard from "./components/TrafficCard";
 
 function Assistant() {
+  // Deep-linked from a trip page as /assistant?city=Paris — pre-load that city.
+  const [searchParams] = useSearchParams();
+  const initialCity = searchParams.get("city") || "";
+
   return (
     <div className="relative min-h-screen">
       <MovingBackground />
@@ -26,7 +31,7 @@ function Assistant() {
         <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           {/* Left column: short-by-default Weather paired with the taller Emergency */}
           <div className="flex flex-col gap-6">
-            <WeatherCard />
+            <WeatherCard initialCity={initialCity} />
             <EmergencyCard />
           </div>
           {/* Right column */}
